@@ -38,9 +38,7 @@ public class JDBCTest {
                 System.out.println("---------------------------------------");
 
                 System.out.println("ID:  " + id);
-                System.out.println("Surname: " + surname);
-                System.out.println("Name: " + name);
-                System.out.println("Secondname: " + secondname);
+                System.out.println(surname + " " + name + " " + secondname);
                 System.out.println("Salary: $" + salary);
 
             }
