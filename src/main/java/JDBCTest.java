@@ -17,6 +17,7 @@ public class JDBCTest {
             connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");
 
             System.out.println("Executing statement...");
+
             statement = connection.createStatement();
 
             String sql = "SELECT * FROM STAFF";
