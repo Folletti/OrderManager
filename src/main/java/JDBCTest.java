@@ -1,3 +1,6 @@
+package JDBCTest;
+
+
 import java.sql.*;
 
 public class JDBCTest {
@@ -12,7 +15,6 @@ public class JDBCTest {
 
             System.out.println("Registering JDBC Driver...");
             Object driver = Class.forName(JDBC_Driver);
-
 
             connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");
 
