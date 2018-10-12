@@ -1,4 +1,4 @@
-import java.sql.*;
+/*import java.sql.*;
 
 public class JDBCTest {
 
@@ -56,3 +56,4 @@ public class JDBCTest {
         }
     }
 }
+*/
