@@ -10,8 +10,8 @@ public class Visual {
 
     static final String JDBC_Driver = "com.mysql.cj.jdbc.Driver";
     static final String DATABASE_URL = "jdbc:mysql://localhost:3306/men?useSSL=false";
-    Connection connection = null;
-    Statement statement = null;
+    Connection connection;
+    Statement statement;
     String sql;
     ResultSet resultSet;
 
@@ -21,12 +21,11 @@ public class Visual {
 
             //SQL
             Object driver = Class.forName(JDBC_Driver);
-            connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");
-            statement = connection.createStatement();
+
 
             //IO
             PipedInputStream piw = new PipedInputStream();
-            PipedOutputStream pow = new PipedOutputStream();
+            PipedOutputStream pow = new PipedOutputStream(piw);
             OutputStreamWriter osw = new OutputStreamWriter(pow);
             PrintWriter pwriter = new PrintWriter(osw);
             InputStreamReader isr = new InputStreamReader(piw);
@@ -88,20 +87,23 @@ public class Visual {
 
                     StringBuffer sb = new StringBuffer();
                     char[] c = new char[10];
-                    int count = 0;
+                    int count;
 
                     try {
                         while (true) {
 
-                            while (isr.ready()) {
+                            if (isr.ready()) {
+                                sb.delete(0, sb.capacity());
 
-                                count = isr.read(c, 0, c.length);
-                                sb.append(c, 0, count);
+                                while (isr.ready()) {
+
+                                    count = isr.read(c, 0, c.length);
+                                    sb.append(c, 0, count);
+                                }
+
+                                ta1.setText(sb.toString());
                             }
-
-                            Thread.sleep(50);
-
-                            ta1.append(sb.toString());
+                            Thread.sleep(200);
                         }
 
                     } catch (IOException e1) {
@@ -112,47 +114,61 @@ public class Visual {
                 }
             }
 
-            new Thread(new Monitor()).start();
+            Thread monitorThread = new Thread(new Monitor());
+            monitorThread.setDaemon(true);
+            monitorThread.start();
 
-            bt5.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
+            bt5.addActionListener((ActionEvent e) -> {
 
-                    try {
-                        sql = "SELECT * FROM STAFF";
+                try {
+                    connection = null;
+                    statement = null;
+                    sql = "SELECT * FROM STAFF";
 
-                        resultSet = statement.executeQuery(sql);
+                    connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");
+                    statement = connection.createStatement();
+                    resultSet = statement.executeQuery(sql);
+                    ta1.setText("");
 
-                       pwriter.println("\nSTAFF: ");
+                    pwriter.println("\nSTAFF: ");
 
-                        while (resultSet.next()) {
-                            int id = resultSet.getInt("id");
-                            String name = resultSet.getString("name");
-                            String secondname = resultSet.getString("secondname");
-                            String surname = resultSet.getString("surname");
-                            int salary = resultSet.getInt("salary");
+                    while (resultSet.next()) {
+                        int id = resultSet.getInt("id");
+                        String name = resultSet.getString("name");
+                        String secondname = resultSet.getString("secondname");
+                        String surname = resultSet.getString("surname");
+                        int salary = resultSet.getInt("salary");
 
-                            pwriter.println("---------------------------------------");
-                            pwriter.println("ID:  " + id);
-                            pwriter.println(surname + " " + name + " " + secondname);
-                            pwriter.println("Salary: $" + salary);
-                            pwriter.flush();
-                        }
+                        pwriter.println("---------------------------------------");
+                        pwriter.println("ID:  " + id);
+                        pwriter.println(surname + " " + name + " " + secondname);
 
-                    } catch (SQLException e3) {
-                        e3.printStackTrace();
+                        System.out.println(surname + " " + name + " " + secondname);
+
+                        pwriter.println("Salary: $" + salary);
+
+                        pwriter.flush();
+
                     }
+
+                    resultSet.close();
+                    statement.close();
+                    connection.close();
+
+                } catch (SQLException e3) {
+                    e3.printStackTrace();
                 }
+
             });
 
-            resultSet.close();
-            statement.close();
-            connection.close();
+
 
         } catch (ClassNotFoundException e1) {
             e1.printStackTrace();
-        } catch (SQLException e2) {
+        } catch (IOException e3) {
+            e3.printStackTrace();/*catch (SQLException e2) {
             e2.printStackTrace();
+        } */
         }
     }
 
