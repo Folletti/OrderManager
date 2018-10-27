@@ -193,7 +193,7 @@ public class Visual {
 
                         sql = "INSERT into orders values (null, '" + dg.descTf.getText() + "', '" +
                                 dg.clTf.getText() + "', '" + dg.mechTf.getText() + "', '" + dg.inDateTf.getText() + "', '" +
-                                dg.finDateTf.getText() + "', " + dg.costTf.getText() + ", '" + dg.stTf.getText() + "')";
+                                dg.finDateTf.getText() + "', " + dg.costTf.getText() + ", '" + dg.cmbBx.getSelectedItem() + "')";
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
@@ -208,6 +208,20 @@ public class Visual {
                     }
 
                 });
+
+                //Код для выполнения по нажатию "Enter"
+                /*Component[] cmps = dg.getContentPane().getComponents();
+                for (int i = 0; i < cmps.length; i++) {
+                    cmps[i].addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyPressed(KeyEvent e) {
+                            if (e.getKeyCode() == 10) dg.okBt.eve
+
+                        }
+                    });
+                }*/
+
+
 
             });
 
@@ -216,55 +230,66 @@ public class Visual {
 
                 //Создание диалогового окна изменения заказа
 
-                OrderDialog dg = new OrderDialog("Изменение заказа");
+                if (tbl3.getSelectedRow() != -1) {
 
-                Component[] ncomp = dg.getContentPane().getComponents();
+                    OrderDialog dg = new OrderDialog("Изменение заказа");
 
-                for (int i = 0; i < ncomp.length; i++) {
-                    if (ncomp[i] instanceof JTextField) {
-                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
+                    Component[] ncomp = dg.getContentPane().getComponents();
+
+                    for (int i = 0; i < ncomp.length; i++) {
+                        if (ncomp[i] instanceof JTextField) {
+                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
+                        } else if (ncomp[i] instanceof JComboBox) {
+                            ((JComboBox) ncomp[i]).setSelectedItem(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), 7)));
+                        }
                     }
+
+                    dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                        try {
+                            Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
+
+                            sql = "UPDATE orders SET description = '" + dg.descTf.getText() + "', client = '" +
+                                    dg.clTf.getText() + "', mech = '" + dg.mechTf.getText() + "', init_date = '" + dg.inDateTf.getText() + "', fin_date = '" +
+                                    dg.finDateTf.getText() + "', cost = " + dg.costTf.getText() + ", status = '" + dg.cmbBx.getSelectedItem() + "' where id = " + (int) rowId;
+
+                            statement = connection.prepareStatement(sql);
+                            statement.executeUpdate();
+
+                            readOrders(tbl3);
+
+                            dg.dispose();
+
+
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
+
+                    });
+                } else {
+                    FailDialog dg = new FailDialog("Ошибка!");
                 }
+            });
 
-                dg.okBt.addActionListener((ActionEvent ev) -> {
-
+            //Действие кнопки удаления заказа
+            delOrBt.addActionListener( (ActionEvent e) -> {
+                if (tbl3.getSelectedRow() != -1) {
                     try {
+
                         Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
 
-                        sql = "UPDATE orders SET description = '" + dg.descTf.getText() + "', client = '" +
-                                dg.clTf.getText() + "', mech = '" + dg.mechTf.getText() + "', init_date = '" + dg.inDateTf.getText() + "', fin_date = '" +
-                                dg.finDateTf.getText() + "', cost = " + dg.costTf.getText() + ", status = '" + dg.stTf.getText() + "' where id = " + (int) rowId;
-                        
+                        sql = "DELETE from orders where id = " + (int) rowId;
+
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
                         readOrders(tbl3);
 
-                        dg.dispose();
-
-
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
-
-                });
-            });
-
-            //Действие кнопки удаления заказа
-            delOrBt.addActionListener( (ActionEvent e) -> {
-                try {
-
-                    Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
-
-                    sql = "DELETE from orders where id = " + (int) rowId;
-
-                    statement = connection.prepareStatement(sql);
-                    statement.executeUpdate();
-
-                    readOrders(tbl3);
-
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
+                } else {
+                    new FailDialog("Ошибка!");
                 }
             });
 
@@ -301,55 +326,65 @@ public class Visual {
 
                 //Создание диалогового окна изменения механика
 
-               MechDialog dg = new MechDialog("Изменение данных механика");
+                if (tbl1.getSelectedRow() != -1) {
 
-                Component[] ncomp = dg.getContentPane().getComponents();
 
-                for (int i = 0; i < ncomp.length; i++) {
-                    if (ncomp[i] instanceof JTextField) {
-                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl1.getValueAt(tbl1.getSelectedRow(), i + 1)));
+                    MechDialog dg = new MechDialog("Изменение данных механика");
+
+                    Component[] ncomp = dg.getContentPane().getComponents();
+
+                    for (int i = 0; i < ncomp.length; i++) {
+                        if (ncomp[i] instanceof JTextField) {
+                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl1.getValueAt(tbl1.getSelectedRow(), i + 1)));
+                        }
                     }
+
+                    dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                        try {
+                            Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
+
+                            sql = "UPDATE staff SET name = '" + dg.nameTf.getText() + "', second_name = '" +
+                                    dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', salary = '" + dg.salaryTf.getText() +
+                                    "' where id = " + (int) rowId;
+
+                            statement = connection.prepareStatement(sql);
+                            statement.executeUpdate();
+
+                            readMech(tbl1);
+
+                            dg.dispose();
+
+
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
+
+                    });
+                } else {
+                    new FailDialog("Ошибка!");
                 }
+            });
 
-                dg.okBt.addActionListener((ActionEvent ev) -> {
-
+            //Действие кнопки удаления механика
+            delMechBt.addActionListener( (ActionEvent e) -> {
+                if (tbl1.getSelectedRow() != -1) {
                     try {
+
                         Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
 
-                        sql = "UPDATE staff SET name = '" + dg.nameTf.getText() + "', second_name = '" +
-                                dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', salary = '" + dg.salaryTf.getText() +
-                                "' where id = " + (int) rowId;
+                        sql = "DELETE from staff where id = " + (int) rowId;
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
                         readMech(tbl1);
 
-                        dg.dispose();
-
-
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
-
-                });
-            });
-
-            //Действие кнопки удаления механика
-            delMechBt.addActionListener( (ActionEvent e) -> {
-                try {
-
-                    Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
-
-                    sql = "DELETE from staff where id = " + (int) rowId;
-
-                    statement = connection.prepareStatement(sql);
-                    statement.executeUpdate();
-
-                    readMech(tbl1);
-
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
+                } else {
+                    new FailDialog("Ошибка!");
                 }
             });
 
@@ -385,55 +420,63 @@ public class Visual {
 
                 //Создание диалогового окна изменения клиента
 
-                ClientDialog dg = new ClientDialog("Изменение данных клиента");
+                if (tbl2.getSelectedRow() != -1) {
+                    ClientDialog dg = new ClientDialog("Изменение данных клиента");
 
-                Component[] ncomp = dg.getContentPane().getComponents();
+                    Component[] ncomp = dg.getContentPane().getComponents();
 
-                for (int i = 0; i < ncomp.length; i++) {
-                    if (ncomp[i] instanceof JTextField) {
-                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl2.getValueAt(tbl2.getSelectedRow(), i + 1)));
+                    for (int i = 0; i < ncomp.length; i++) {
+                        if (ncomp[i] instanceof JTextField) {
+                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl2.getValueAt(tbl2.getSelectedRow(), i + 1)));
+                        }
                     }
+
+                    dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                        try {
+                            Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
+
+                            sql = "UPDATE clients SET name = '" + dg.nameTf.getText() + "', second_name = '" +
+                                    dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', tel_number = '" + dg.telTf.getText() +
+                                    "' where id = " + (int) rowId;
+
+                            statement = connection.prepareStatement(sql);
+                            statement.executeUpdate();
+
+                            readClients(tbl2);
+
+                            dg.dispose();
+
+
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
+
+                    });
+                } else {
+                    new FailDialog("Ошибка!");
                 }
+            });
 
-                dg.okBt.addActionListener((ActionEvent ev) -> {
-
+            //Действие кнопки удаления клиента
+            delClBt.addActionListener( (ActionEvent e) -> {
+                if (tbl2.getSelectedRow() != -1) {
                     try {
+
                         Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
 
-                        sql = "UPDATE clients SET name = '" + dg.nameTf.getText() + "', second_name = '" +
-                                dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', tel_number = '" + dg.telTf.getText() +
-                                "' where id = " + (int) rowId;
+                        sql = "DELETE from clients where id = " + (int) rowId;
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
                         readClients(tbl2);
 
-                        dg.dispose();
-
-
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
-
-                });
-            });
-
-            //Действие кнопки удаления клиента
-            delMechBt.addActionListener( (ActionEvent e) -> {
-                try {
-
-                    Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
-
-                    sql = "DELETE from clients where id = " + (int) rowId;
-
-                    statement = connection.prepareStatement(sql);
-                    statement.executeUpdate();
-
-                    readClients(tbl2);
-
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
+                } else {
+                    new FailDialog("Ошибка!");
                 }
             });
 
@@ -443,8 +486,6 @@ public class Visual {
         } catch (SQLException e2) {
             e2.printStackTrace();
         }
-
-
 
 
     }
@@ -476,6 +517,11 @@ public class Visual {
 
             resultSet.close();
             statement.close();
+
+            for (int i = count; i < tbl.getRowCount(); i++) {
+                for (int j = 0; j < tbl.getColumnCount(); j++)
+                    tbl.setValueAt(null, i, j);
+            }
 
         } catch (SQLException e3) {
             e3.printStackTrace();
@@ -512,6 +558,11 @@ public class Visual {
 
             resultSet.close();
             statement.close();
+
+            for (int i = count; i < tbl.getRowCount(); i++) {
+                for (int j = 0; j < tbl.getColumnCount(); j++)
+                    tbl.setValueAt(null, i, j);
+            }
 
 
         } catch (SQLException e3) {
@@ -555,6 +606,11 @@ public class Visual {
             resultSet.close();
             statement.close();
 
+            for (int i = count; i < tbl.getRowCount(); i++) {
+                for (int j = 0; j < tbl.getColumnCount(); j++)
+                    tbl.setValueAt(null, i, j);
+            }
+
         } catch (SQLException e3) {
             e3.printStackTrace();
         }
@@ -565,7 +621,7 @@ public class Visual {
         public OrderDialog(String title) {
 
             setTitle(title);
-            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 400, fr.getHeight() - 400);
+            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 350);
             setLayout(null);
             descTf = new JTextField();
             clTf = new JTextField();
@@ -573,7 +629,9 @@ public class Visual {
             inDateTf = new JTextField();
             finDateTf = new JTextField();
             costTf = new JTextField();
-            stTf = new JTextField();
+            //stTf = new JTextField();
+            variants = new String[] {"Запланирован", "Выполнен", "Принят клиентом"};
+            cmbBx = new JComboBox(variants);
             descTfLb = new JLabel("Описание заказа: ");
             clTfLb = new JLabel("Фамилия клиента: ");
             mechTfLb = new JLabel("Фамилия механика: ");
@@ -588,7 +646,8 @@ public class Visual {
             add(inDateTf);
             add(finDateTf);
             add(costTf);
-            add(stTf);
+            //add(stTf);
+            add(cmbBx);
             add(descTfLb);
             add(clTfLb);
             add(mechTfLb);
@@ -604,22 +663,25 @@ public class Visual {
             costTf.setBounds(descTf.getX(), descTf.getY() + 3 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
             inDateTf.setBounds(descTf.getX() + descTf.getWidth() + l, descTf.getY(), descTf.getWidth(), descTf.getHeight());
             finDateTf.setBounds(inDateTf.getX(), clTf.getY(), descTf.getWidth(), descTf.getHeight());
-            stTf.setBounds(inDateTf.getX(), mechTf.getY(), descTf.getWidth(), descTf.getHeight());
+            //stTf.setBounds(inDateTf.getX(), mechTf.getY(), descTf.getWidth(), descTf.getHeight());
+            cmbBx.setBounds(inDateTf.getX(), mechTf.getY(), descTf.getWidth(), descTf.getHeight());
             descTfLb.setBounds(descTf.getX(), descTf.getY() - 15, descTf.getWidth(), 15);
             clTfLb.setBounds(clTf.getX(), clTf.getY() - 15, clTf.getWidth(), 15);
             mechTfLb.setBounds(mechTf.getX(), mechTf.getY() - 15, mechTf.getWidth(), 15);
             inDateTfLb.setBounds(inDateTf.getX(), inDateTf.getY() - 15, inDateTf.getWidth(), 15);
             finDateTfLb.setBounds(finDateTf.getX(), finDateTf.getY() - 15, finDateTf.getWidth(), 15);
             costTfLb.setBounds(costTf.getX(), costTf.getY() - 15, costTf.getWidth(), 15);
-            stTfLb.setBounds(stTf.getX(), stTf.getY() - 15, stTf.getWidth(), 15);
+            //stTfLb.setBounds(stTf.getX(), stTf.getY() - 15, stTf.getWidth(), 15);
+            stTfLb.setBounds(cmbBx.getX(), cmbBx.getY() - 15, cmbBx.getWidth(), 15);
             //Размещение кнопки "OK"
-            okBt.setBounds(getWidth() / 2, getHeight() - 100, bt.width, bt.height);
+            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     e.getWindow().dispose();
                 }
             });
+
             setVisible(true);
         }
         JTextField descTf;
@@ -628,7 +690,9 @@ public class Visual {
         JTextField inDateTf;
         JTextField finDateTf;
         JTextField costTf;
-        JTextField stTf;
+        //JTextField stTf;
+        String[] variants;
+        JComboBox cmbBx;
         JLabel descTfLb;
         JLabel clTfLb;
         JLabel mechTfLb;
@@ -642,7 +706,7 @@ public class Visual {
     class MechDialog extends JDialog {
         public MechDialog(String title) {
             setTitle(title);
-            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 400, fr.getHeight() - 400);
+            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 400);
             setLayout(null);
             snameTf = new JTextField();
             nameTf = new JTextField();
@@ -677,7 +741,7 @@ public class Visual {
             salTfLb.setBounds(salaryTf.getX(), salaryTf.getY() - 15, salaryTf.getWidth(), 15);
 
             //Размещение кнопки "OK"
-            okBt.setBounds(getWidth() / 2, getHeight() - 100, bt.width, bt.height);
+            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -702,7 +766,7 @@ public class Visual {
     class ClientDialog extends JDialog {
         public ClientDialog(String title) {
             setTitle(title);
-            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 400, fr.getHeight() - 400);
+            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 400);
             setLayout(null);
             snameTf = new JTextField();
             nameTf = new JTextField();
@@ -737,7 +801,7 @@ public class Visual {
             telTfLb.setBounds(telTf.getX(), telTf.getY() - 15, telTf.getWidth(), 15);
 
             //Размещение кнопки "OK"
-            okBt.setBounds(getWidth() / 2, getHeight() - 100, bt.width, bt.height);
+            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -757,6 +821,46 @@ public class Visual {
 
         JButton okBt;
 
+    }
+
+    //Класс окна сообщения об ошибке из-за не выбранной строки таблицы
+    class FailDialog extends JDialog {
+        public FailDialog(String title) {
+
+            setTitle(title);
+            setBounds(fr.getX() + 250, fr.getY() + 250, 300, 180);
+            setLayout(null);;
+
+            messageLb = new JLabel("Изменяемая строка не выбрана!");
+
+            okBt = new JButton("OK");
+
+            add(messageLb);
+
+            add(okBt);
+
+            //Размещение компонентов
+
+            messageLb.setBounds(40, 10, getWidth(), 50);
+
+            //Размещение кнопки "OK"
+            okBt.setBounds(getWidth() / 2 - 40, messageLb.getY() + messageLb.getHeight() + 20, 80, 40);
+            okBt.addActionListener((ActionEvent actEv) -> {
+                dispose();
+            });
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    e.getWindow().dispose();
+                }
+            });
+            setVisible(true);
+        }
+
+
+        JLabel messageLb;
+
+        JButton okBt;
     }
     
     public static void main (String[] args) {
