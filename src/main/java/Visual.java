@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.util.*;
 
 
 public class Visual {
@@ -13,10 +14,21 @@ public class Visual {
     PreparedStatement statement;
     String sql;
     ResultSet resultSet;
+    HashSet <Object> orCol, mechCol, clCol;
     int l = 25;
     int d = 20;
     JFrame fr;
     Rectangle bt;
+    int maxMechId, maxClientID, maxOrID;
+    Object[] colounmHeader1;
+    Object[] coloumnHeader2;
+    Object[] coloumnHeader3;
+    JTable tbl1, tbl2, tbl3;
+    JScrollPane jsp1, jsp2, jsp3;
+    Box mechBox, clBox, orBox;
+    final Status slated = new Status(Status.SLATED);
+    final Status ready = new Status(Status.READY);
+    final Status accepted = new Status(Status.ACCEPTED);
 
     public void create() {
 
@@ -46,43 +58,69 @@ public class Visual {
             JButton delMechBt = new JButton("Удалить механика");
             JButton mechStatBt = new JButton("Статистика");
 
+            Font bigFont = new Font("Verdana", Font.BOLD, 16);
+            mechStatBt.setFont(bigFont);
+
             JButton addClBt = new JButton("Добавить клиента");
             JButton chClBt = new JButton("Изменить данные клиента");
             JButton delClBt = new JButton("Удалить клиента");
 
-            JButton refrBt = new JButton("Обновить таблицы");
+            JButton refrBt = new JButton();
+            JLabel refrBtLb1 = new JLabel("Обновить");
+            JLabel refrBtLb2 = new JLabel("таблицы");
+            refrBt.setLayout(null);
+            refrBt.add(refrBtLb1);
+            refrBt.add(refrBtLb2);
+            refrBtLb1.setFont(bigFont);
+            refrBtLb2.setFont(bigFont);
 
-            Object[] colounmHeader1 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Зарплата, руб/час"};
-            Object[] coloumnHeader2 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Телефон"};
-            Object[] coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость", "Статус"};
+            //refrBtLb2.setLocation(refrBtLb1.getLocation());
 
-            JTable tbl1 = new JTable(new Object[80][colounmHeader1.length], colounmHeader1);
-            JTable tbl2 = new JTable(new Object[80][coloumnHeader2.length], coloumnHeader2);
-            JTable tbl3 = new JTable(new Object[80][coloumnHeader3.length], coloumnHeader3);
+            colounmHeader1 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Зарплата, руб/час"};
+            coloumnHeader2 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Телефон"};
+            coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость", "Статус"};
 
-            Box mechBox = new Box(BoxLayout.Y_AXIS);
-            mechBox.add(new JScrollPane(tbl1));
+            tbl1 = new JTable(new Object[20][colounmHeader1.length], colounmHeader1);
+            tbl2 = new JTable(new Object[20][coloumnHeader2.length], coloumnHeader2);
+            tbl3 = new JTable(new Object[20][coloumnHeader3.length], coloumnHeader3);
+
+            //tbl1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            tbl1.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbl2.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbl3.getColumnModel().getColumn(5).setMinWidth(110);
+            tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
+            //tbl1.getColumnModel().getColumn(4).set
+
+            mechBox = new Box(BoxLayout.Y_AXIS);
+            jsp1 = new JScrollPane(tbl1);
+            mechBox.add(jsp1);
             JLabel mechBxLb = new JLabel("Список механиков: ");
             mechBxLb.setHorizontalAlignment(JLabel.CENTER);
             Font verdana = new Font("Verdana", Font.BOLD, 14);
             mechBxLb.setFont(verdana);
 
-            Box clBox = new Box(BoxLayout.Y_AXIS);
-            clBox.add(new JScrollPane(tbl2));
+            clBox = new Box(BoxLayout.Y_AXIS);
+            jsp2 = new JScrollPane(tbl2);
+            clBox.add(jsp2);
             JLabel clBxLb = new JLabel("Список клиентов: ");
             clBxLb.setHorizontalAlignment(JLabel.CENTER);
             clBxLb.setFont(verdana);
 
-            Box orBox = new Box(BoxLayout.Y_AXIS);
-            orBox.add(new JScrollPane(tbl3));
+            orBox = new Box(BoxLayout.Y_AXIS);
+            jsp3 = new JScrollPane(tbl3);
+            orBox.add(jsp3);
+
             JLabel orBxLb = new JLabel("Список заказов: ");
             orBxLb.setHorizontalAlignment(JLabel.CENTER);
             orBxLb.setFont(verdana);
 
             //Создание текстовых полей и надписей фильтра
-            TextField clFltr = new TextField();
-            TextField statFltr = new TextField();
-            TextField descFltr = new TextField();
+            JTextField clFltr = new JTextField();
+            //JTextField statFltr = new JTextField();
+            String[] variants = new String[] {"", "Запланирован", "Выполнен", "Принят клиентом"};
+            JComboBox statFltr = new JComboBox(variants);
+            JTextField descFltr = new JTextField();
             JLabel clFltrLb = new JLabel("Фамилия клиента");
             JLabel statFltrLb = new JLabel("Статус");
             JLabel descFltrLb = new JLabel("Описание заказа");
@@ -141,6 +179,10 @@ public class Visual {
             mechStatBt.setBounds(fr.getWidth() - 200, mechBox.getY(), bt.width - 40, bt.height + 40);
             //Кнопка обновления всех таблиц
             refrBt.setBounds(mechStatBt.getX(), fr.getHeight() - 150, mechStatBt.getWidth(), bt.height + 50);
+            refrBtLb1.setBounds(refrBt.getWidth() / 2 - 50, 15, 100, 15);
+            refrBtLb2.setBounds(refrBt.getWidth() / 2 - 50, 40, 100, 15);
+            refrBtLb1.setHorizontalAlignment(JLabel.CENTER);
+            refrBtLb2.setHorizontalAlignment(JLabel.CENTER);
 
             //Текстовые поля фильтра
             clFltr.setBounds(orBox.getX() + orBox.getWidth() + l, orBox.getY(), 150, 25);
@@ -480,6 +522,24 @@ public class Visual {
                 }
             });
 
+            orFltrBt.addActionListener( (ActionEvent e) -> {
+
+                Status st = new Status(statFltr.getSelectedItem().toString());
+                Filter filter = new Filter(descFltr.getText(), clFltr.getText(), st);
+
+                readOrders(tbl3, filter);
+
+                //Здесь использовать коллекцию
+
+                //for (int i = 0; i < tbl3.)
+
+
+            });
+
+            mechStatBt.addActionListener( (ActionEvent e) -> {
+                
+            });
+
 
         } catch (ClassNotFoundException e1) {
             e1.printStackTrace();
@@ -494,22 +554,34 @@ public class Visual {
     public void readMech(JTable tbl) {
         try {
 
-            sql = "SELECT * FROM staff";
+            sql = "select max(id) as max_id from staff";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
+            resultSet.next();
+            maxMechId = resultSet.getInt("max_id");
+
+            mechBox.setVisible(false);
+            mechBox.remove(jsp1);
+            tbl1 = new JTable(new Object[maxMechId][colounmHeader1.length], colounmHeader1);
+            jsp1 = new JScrollPane(tbl1);
+            mechBox.add(jsp1);
+            mechBox.setVisible(true);
+
+            sql = "SELECT * FROM staff";
+            resultSet = statement.executeQuery(sql);
             int count = 0;
             while (resultSet.next()) {
 
                 int id = resultSet.getInt("id");
-                tbl.setValueAt(id, count, 0);
+                tbl1.setValueAt(id, count, 0);
                 String name = resultSet.getString("name");
-                tbl.setValueAt(name, count, 2);
+                tbl1.setValueAt(name, count, 2);
                 String secondname = resultSet.getString("second_name");
-                tbl.setValueAt(secondname, count, 3);
+                tbl1.setValueAt(secondname, count, 3);
                 String surname = resultSet.getString("surname");
-                tbl.setValueAt(surname, count, 1);
+                tbl1.setValueAt(surname, count, 1);
                 int salary = resultSet.getInt("salary");
-                tbl.setValueAt(salary, count, 4);
+                tbl1.setValueAt(salary, count, 4);
 
                 count++;
 
@@ -518,10 +590,13 @@ public class Visual {
             resultSet.close();
             statement.close();
 
-            for (int i = count; i < tbl.getRowCount(); i++) {
-                for (int j = 0; j < tbl.getColumnCount(); j++)
-                    tbl.setValueAt(null, i, j);
+            for (int i = count; i < tbl1.getRowCount(); i++) {
+                for (int j = 0; j < tbl1.getColumnCount(); j++)
+                    tbl1.setValueAt(null, i, j);
             }
+
+            tbl1.getColumnModel().getColumn(0).setMaxWidth(40);
+
 
         } catch (SQLException e3) {
             e3.printStackTrace();
@@ -533,24 +608,36 @@ public class Visual {
 
         try {
 
-            sql = "SELECT * FROM clients";
+            sql = "select max(id) as max_id from clients";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
+            resultSet.next();
+            maxClientID = resultSet.getInt("max_id");
+
+            clBox.setVisible(false);
+            clBox.remove(jsp2);
+            tbl2 = new JTable(new Object[maxClientID][coloumnHeader2.length], coloumnHeader2);
+            jsp2 = new JScrollPane(tbl2);
+            clBox.add(jsp2);
+            clBox.setVisible(true);
+
+            sql = "SELECT * FROM clients";
+            resultSet = statement.executeQuery(sql);
 
             int count = 0;
 
             while (resultSet.next()) {
 
                 int id = resultSet.getInt("id");
-                tbl.setValueAt(id, count, 0);
+                tbl2.setValueAt(id, count, 0);
                 String name = resultSet.getString("name");
-                tbl.setValueAt(name, count, 2);
+                tbl2.setValueAt(name, count, 2);
                 String secondname = resultSet.getString("second_name");
-                tbl.setValueAt(secondname, count, 3);
+                tbl2.setValueAt(secondname, count, 3);
                 String surname = resultSet.getString("surname");
-                tbl.setValueAt(surname, count, 1);
+                tbl2.setValueAt(surname, count, 1);
                 long tel = resultSet.getLong("tel_number");
-                tbl.setValueAt(tel, count, 4);
+                tbl2.setValueAt(tel, count, 4);
 
                 count++;
 
@@ -559,10 +646,15 @@ public class Visual {
             resultSet.close();
             statement.close();
 
-            for (int i = count; i < tbl.getRowCount(); i++) {
-                for (int j = 0; j < tbl.getColumnCount(); j++)
-                    tbl.setValueAt(null, i, j);
+
+
+            for (int i = count; i < tbl2.getRowCount(); i++) {
+                for (int j = 0; j < tbl2.getColumnCount(); j++)
+                    tbl2.setValueAt(null, i, j);
             }
+
+
+            tbl2.getColumnModel().getColumn(0).setMaxWidth(40);
 
 
         } catch (SQLException e3) {
@@ -571,33 +663,48 @@ public class Visual {
     }
 
     //Объявление метода обновления таблицы заказов
-    public  void readOrders(JTable tbl) {
+    public void readOrders(JTable tbl) {
         try {
 
-            sql = "SELECT * FROM orders";
+            //Получение максимальных ID из БД для создания таблиц
+
+            sql = "select max(id) as max_id from orders";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
+            resultSet.next();
+            maxOrID = resultSet.getInt("max_id");
+
+            //Генерация новой таблицы
+            orBox.setVisible(false);
+            orBox.remove(jsp3);
+            tbl3 = new JTable(new Object[maxOrID][coloumnHeader3.length], coloumnHeader3);
+            jsp3 = new JScrollPane(tbl3);
+            orBox.add(jsp3);
+            orBox.setVisible(true);
+
+            sql = "SELECT * FROM orders";
+            resultSet = statement.executeQuery(sql);
 
             int count = 0;
 
             while (resultSet.next()) {
 
                 int id = resultSet.getInt("id");
-                tbl.setValueAt(id, count, 0);
+                tbl3.setValueAt(id, count, 0);
                 String description = resultSet.getString("description");
-                tbl.setValueAt(description, count, 1);
+                tbl3.setValueAt(description, count, 1);
                 String client = resultSet.getString("client");
-                tbl.setValueAt(client, count, 2);
+                tbl3.setValueAt(client, count, 2);
                 String mech = resultSet.getString("mech");
-                tbl.setValueAt(mech, count, 3);
+                tbl3.setValueAt(mech, count, 3);
                 String init_time = resultSet.getString("init_date");
-                tbl.setValueAt(init_time, count, 4);
+                tbl3.setValueAt(init_time, count, 4);
                 String fin_time = resultSet.getString("fin_date");
-                tbl.setValueAt(fin_time, count, 5);
+                tbl3.setValueAt(fin_time, count, 5);
                 int cost = resultSet.getInt("cost");
-                tbl.setValueAt(cost, count, 6);
+                tbl3.setValueAt(cost, count, 6);
                 String status = resultSet.getString("status");
-                tbl.setValueAt(status, count, 7);
+                tbl3.setValueAt(status, count, 7);
 
                 count++;
 
@@ -606,10 +713,83 @@ public class Visual {
             resultSet.close();
             statement.close();
 
-            for (int i = count; i < tbl.getRowCount(); i++) {
-                for (int j = 0; j < tbl.getColumnCount(); j++)
-                    tbl.setValueAt(null, i, j);
+            for (int i = count; i < tbl3.getRowCount(); i++) {
+                for (int j = 0; j < tbl3.getColumnCount(); j++)
+                    tbl3.setValueAt(null, i, j);
             }
+
+            tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbl3.getColumnModel().getColumn(5).setMinWidth(110);
+            tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
+
+        } catch (SQLException e3) {
+            e3.printStackTrace();
+        }
+    }
+
+    public void readOrders(JTable tbl, Filter filter) {
+        try {
+
+            //Получение максимальных ID из БД для создания таблиц
+
+            sql = "select max(id) as max_id from orders";
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            maxOrID = resultSet.getInt("max_id");
+
+            //Генерация новой таблицы
+            orBox.setVisible(false);
+            orBox.remove(jsp3);
+            tbl3 = new JTable(new Object[maxOrID][coloumnHeader3.length], coloumnHeader3);
+            jsp3 = new JScrollPane(tbl3);
+            orBox.add(jsp3);
+            orBox.setVisible(true);
+
+            sql = "SELECT * FROM orders";
+            resultSet = statement.executeQuery(sql);
+
+            int count = 0;
+
+            while (resultSet.next()) {
+
+                int id = resultSet.getInt("id");
+                String description = resultSet.getString("description");
+                String client = resultSet.getString("client");
+                String mech = resultSet.getString("mech");
+                String init_time = resultSet.getString("init_date");
+                String fin_time = resultSet.getString("fin_date");
+                int cost = resultSet.getInt("cost");
+                String status = resultSet.getString("status");
+
+                if (filter.filter(client, filter.getClient()) ||
+                        filter.filter(description, filter.getDesc()) ||
+                        filter.filter(status, filter.getStatus().toString())) continue;
+
+                tbl3.setValueAt(id, count, 0);
+                tbl3.setValueAt(description, count, 1);
+                tbl3.setValueAt(client, count, 2);
+                tbl3.setValueAt(mech, count, 3);
+                tbl3.setValueAt(init_time, count, 4);
+                tbl3.setValueAt(fin_time, count, 5);
+                tbl3.setValueAt(cost, count, 6);
+                tbl3.setValueAt(status, count, 7);
+
+                count++;
+
+            }
+
+            resultSet.close();
+            statement.close();
+
+            for (int i = count; i < tbl3.getRowCount(); i++) {
+                for (int j = 0; j < tbl3.getColumnCount(); j++)
+                    tbl3.setValueAt(null, i, j);
+            }
+
+            tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbl3.getColumnModel().getColumn(5).setMinWidth(110);
+            tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
 
         } catch (SQLException e3) {
             e3.printStackTrace();
@@ -857,7 +1037,6 @@ public class Visual {
             setVisible(true);
         }
 
-
         JLabel messageLb;
 
         JButton okBt;
@@ -866,10 +1045,141 @@ public class Visual {
     public static void main (String[] args) {
         new Visual().create();
     }
+
+    class StatDialog extends JDialog {
+        public StatDialog(String title, String sName, String name, String secNm, int sal, int stats) {
+
+            setTitle(title);
+            setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 400);
+            setLayout(null);
+
+
+            sNameLbLb = new JLabel("Фамилия: ");
+            nameLbLb = new JLabel("Имя: ");
+            secNmLbLb = new JLabel("Отчество: ");
+            salLbLb = new JLabel("Зарплата: ");
+            statsLbLb = new JLabel("Суммарное кличество заказов: ");
+
+            sNameLb = new JLabel(sName);
+            nameLb = new JLabel(name);
+            secNmLb = new JLabel(secNm);
+            salLb = new JLabel(String.valueOf(sal));
+            statsLb = new JLabel(String.valueOf(stats));
+
+            okBt = new JButton("OK");
+            add(sNameLb);
+            add(nameLb);
+            add(secNmLb);
+            add(salLb);
+
+            add(sNameLbLb);
+            add(nameLbLb);
+            add(secNmLbLb);
+            add(salLbLb);
+
+            add(okBt);
+            //Размещение компонентов
+            sNameLb.setBounds(50, 50, 150, 25);
+            nameLb.setBounds(sNameLb.getX(), sNameLb.getY() + sNameLb.getHeight() + d, sNameLb.getWidth(), sNameLb.getHeight());
+            secNmLb.setBounds(sNameLb.getX(), sNameLb.getY() + 2 * (sNameLb.getHeight() + d), sNameLb.getWidth(), sNameLb.getHeight());
+            salLb.setBounds(sNameLb.getX() + sNameLb.getWidth() + l, sNameLb.getY(), sNameLb.getWidth(), sNameLb.getHeight());
+            statsLb.setBounds(sNameLb.getX() + 2 * (sNameLb.getWidth() + l), secNmLb.getY(), sNameLb.getWidth(), sNameLb.getHeight());
+
+            sNameLbLb.setBounds(sNameLb.getX(), sNameLb.getY() - 15, sNameLb.getWidth(), 15);
+            nameLbLb.setBounds(nameLb.getX(), nameLb.getY() - 15, nameLb.getWidth(), 15);
+            secNmLbLb.setBounds(secNmLb.getX(), secNmLb.getY() - 15, secNmLb.getWidth(), 15);
+            salLbLb.setBounds(salLb.getX(), salLb.getY() - 15, salLb.getWidth(), 15);
+            statsLbLb.setBounds(statsLb.getX(), statsLb.getY() - 15, statsLb.getWidth(), 15);
+
+            //Размещение кнопки "OK"
+            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    e.getWindow().dispose();
+                }
+            });
+            setVisible(true);
+        }
+
+        JLabel sNameLb, nameLb, secNmLb, salLb, statsLb, sNameLbLb, nameLbLb, secNmLbLb, salLbLb, statsLbLb;
+
+        JButton okBt;
+
+    }
+}
+
+class Filter {
+    Filter(String desc, String client, Status status) {
+        this.desc = desc;
+        this.client = client;
+        this.status = status;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    private String desc = "";
+    private String client = "";
+    private Status status;
+
+    public boolean filter(String arg, String filterArg) {
+        return !arg.contains(filterArg) && !filterArg.equals("");
+    }
+    /*public void filter(JTextField tf1, JTextField tf2, JTextField tf3) {
+
+    }*/
 }
 
 
+class Status {
+    Status(String status) {
+        if (status.equals(SLATED) || status.equals(READY) || status.equals(ACCEPTED)) {
+            this.status = status;
+        } else this.status = "";
+    }
+    final static String SLATED = "Запланирован";
+    final static String READY = "Выполнен";
+    final static String ACCEPTED = "Принят клиентом";
+
+    private String status = "";
+
+    @Override
+    public String toString() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        if (status.equals(SLATED) || status.equals(READY) || status.equals(ACCEPTED)) {
+            this.status = status;
+        } else this.status = "";
+    }
+
+    public String getStatus() {
+        return status;
+    }
 
 
-
+}
 
