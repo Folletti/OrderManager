@@ -19,7 +19,7 @@ public class Visual {
     int d = 20;
     JFrame fr;
     Rectangle bt;
-    int maxMechId, maxClientID, maxOrID;
+    int countMechs, countClients, countOrders;
     Object[] colounmHeader1;
     Object[] coloumnHeader2;
     Object[] coloumnHeader3;
@@ -241,8 +241,8 @@ public class Visual {
                     try {
 
                         sql = "INSERT into orders values (null, '" + dg.descTf.getText() + "', '" +
-                                dg.clTf.getText() + "', '" + dg.mechTf.getText() + "', '" + dg.inDateTf.getText() + "', '" +
-                                dg.finDateTf.getText() + "', " + dg.costTf.getText() + ", '" + dg.cmbBx.getSelectedItem() + "')";
+                                dg.clCBox.getSelectedItem() + "', '" + dg.mechCBox.getSelectedItem() + "', '" + dg.inDateTf.getText() + "', '" +
+                                dg.finDateTf.getText() + "', " + dg.costTf.getText() + ", '" + dg.stCBox.getSelectedItem() + "')";
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
@@ -289,7 +289,7 @@ public class Visual {
                         if (ncomp[i] instanceof JTextField) {
                             ((JTextField) ncomp[i]).setText(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
                         } else if (ncomp[i] instanceof JComboBox) {
-                            ((JComboBox) ncomp[i]).setSelectedItem(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), 7)));
+                            ((JComboBox) ncomp[i]).setSelectedItem(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
                         }
                     }
 
@@ -299,8 +299,8 @@ public class Visual {
                             Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
 
                             sql = "UPDATE orders SET description = '" + dg.descTf.getText() + "', client = '" +
-                                    dg.clTf.getText() + "', mech = '" + dg.mechTf.getText() + "', init_date = '" + dg.inDateTf.getText() + "', fin_date = '" +
-                                    dg.finDateTf.getText() + "', cost = " + dg.costTf.getText() + ", status = '" + dg.cmbBx.getSelectedItem() + "' where id = " + (int) rowId;
+                                    dg.clCBox.getSelectedItem() + "', mech = '" + dg.mechCBox.getSelectedItem() + "', init_date = '" + dg.inDateTf.getText() + "', fin_date = '" +
+                                    dg.finDateTf.getText() + "', cost = " + dg.costTf.getText() + ", status = '" + dg.stCBox.getSelectedItem() + "' where id = " + (int) rowId;
 
                             statement = connection.prepareStatement(sql);
                             statement.executeUpdate();
@@ -551,7 +551,7 @@ public class Visual {
                     }
 
                     int stats = 0;
-                    for (int i = 0; i < maxOrID; i++) {
+                    for (int i = 0; i < countOrders; i++) {
                         if (tbl3.getValueAt(i, 3) != null && tbl3.getValueAt(i, 3).equals((String) mech[1])) stats++;
                     }
                     new StatsDialog("Статистика механика", (String) mech[1], (String) mech[2], (String) mech[3], (int) mech[4], stats);
@@ -572,15 +572,15 @@ public class Visual {
     public void readMech(JTable tbl) {
         try {
 
-            sql = "select max(id) as max_id from staff";
+            sql = "select count(*) as count from staff";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
-            maxMechId = resultSet.getInt("max_id");
+            countMechs = resultSet.getInt("count");
 
             mechBox.setVisible(false);
             mechBox.remove(jsp1);
-            tbl1 = new JTable(new Object[maxMechId][colounmHeader1.length], colounmHeader1);
+            tbl1 = new JTable(new Object[countMechs][colounmHeader1.length], colounmHeader1);
             jsp1 = new JScrollPane(tbl1);
             mechBox.add(jsp1);
             mechBox.setVisible(true);
@@ -626,15 +626,15 @@ public class Visual {
 
         try {
 
-            sql = "select max(id) as max_id from clients";
+            sql = "select count(*) as count from clients";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
-            maxClientID = resultSet.getInt("max_id");
+            countClients = resultSet.getInt("count");
 
             clBox.setVisible(false);
             clBox.remove(jsp2);
-            tbl2 = new JTable(new Object[maxClientID][coloumnHeader2.length], coloumnHeader2);
+            tbl2 = new JTable(new Object[countClients][coloumnHeader2.length], coloumnHeader2);
             jsp2 = new JScrollPane(tbl2);
             clBox.add(jsp2);
             clBox.setVisible(true);
@@ -686,16 +686,16 @@ public class Visual {
 
             //Получение максимальных ID из БД для создания таблиц
 
-            sql = "select max(id) as max_id from orders";
+            sql = "select count(*) as count from orders";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
-            maxOrID = resultSet.getInt("max_id");
+            countOrders = resultSet.getInt("count");
 
             //Генерация новой таблицы
             orBox.setVisible(false);
             orBox.remove(jsp3);
-            tbl3 = new JTable(new Object[maxOrID][coloumnHeader3.length], coloumnHeader3);
+            tbl3 = new JTable(new Object[countOrders][coloumnHeader3.length], coloumnHeader3);
             jsp3 = new JScrollPane(tbl3);
             orBox.add(jsp3);
             orBox.setVisible(true);
@@ -754,12 +754,12 @@ public class Visual {
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
-            maxOrID = resultSet.getInt("max_id");
+            countOrders = resultSet.getInt("max_id");
 
             //Генерация новой таблицы
             orBox.setVisible(false);
             orBox.remove(jsp3);
-            tbl3 = new JTable(new Object[maxOrID][coloumnHeader3.length], coloumnHeader3);
+            tbl3 = new JTable(new Object[countOrders][coloumnHeader3.length], coloumnHeader3);
             jsp3 = new JScrollPane(tbl3);
             orBox.add(jsp3);
             orBox.setVisible(true);
@@ -822,30 +822,32 @@ public class Visual {
             setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 350);
             setLayout(null);
             descTf = new JTextField();
-            clTf = new JTextField();
-            mechTf = new JTextField();
+            //clTf = new JTextField();
+            //mechTf = new JTextField();
+            clCBox = new JComboBox();
+            mechCBox = new JComboBox();
             inDateTf = new JTextField();
             finDateTf = new JTextField();
             costTf = new JTextField();
-            //stTf = new JTextField();
-            variants = new String[] {"Запланирован", "Выполнен", "Принят клиентом"};
-            cmbBx = new JComboBox(variants);
+            stVars = new String[] {"Запланирован", "Выполнен", "Принят клиентом"};
+            stCBox = new JComboBox(stVars);
             descTfLb = new JLabel("Описание заказа: ");
             clTfLb = new JLabel("Фамилия клиента: ");
             mechTfLb = new JLabel("Фамилия механика: ");
             inDateTfLb = new JLabel("Дата начала работ: ");
             finDateTfLb = new JLabel("Дата окончания работ: ");
-            costTfLb = new JLabel("Стоимость: ");
+            costTfLb = new JLabel("Стоимость, руб: ");
             stTfLb = new JLabel("Статус заказа: ");
             okBt = new JButton("OK");
             add(descTf);
-            add(clTf);
-            add(mechTf);
+            //add(clTf);
+            //add(mechTf);
+            add(clCBox);
+            add(mechCBox);
             add(inDateTf);
             add(finDateTf);
             add(costTf);
-            //add(stTf);
-            add(cmbBx);
+            add(stCBox);
             add(descTfLb);
             add(clTfLb);
             add(mechTfLb);
@@ -854,23 +856,36 @@ public class Visual {
             add(costTfLb);
             add(stTfLb);
             add(okBt);
+
             //Размещение компонентов
+
             descTf.setBounds(50, 50, 150, 25);
-            clTf.setBounds(descTf.getX(), descTf.getY() + descTf.getHeight() + d, descTf.getWidth(), descTf.getHeight());
-            mechTf.setBounds(descTf.getX(), descTf.getY() + 2 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
+            //clTf.setBounds(descTf.getX(), descTf.getY() + descTf.getHeight() + d, descTf.getWidth(), descTf.getHeight());
+            //mechTf.setBounds(descTf.getX(), descTf.getY() + 2 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
+            clCBox.setBounds(descTf.getX(), descTf.getY() + descTf.getHeight() + d, descTf.getWidth(), descTf.getHeight());
+            mechCBox.setBounds(descTf.getX(), descTf.getY() + 2 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
             costTf.setBounds(descTf.getX(), descTf.getY() + 3 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
             inDateTf.setBounds(descTf.getX() + descTf.getWidth() + l, descTf.getY(), descTf.getWidth(), descTf.getHeight());
-            finDateTf.setBounds(inDateTf.getX(), clTf.getY(), descTf.getWidth(), descTf.getHeight());
-            //stTf.setBounds(inDateTf.getX(), mechTf.getY(), descTf.getWidth(), descTf.getHeight());
-            cmbBx.setBounds(inDateTf.getX(), mechTf.getY(), descTf.getWidth(), descTf.getHeight());
+            finDateTf.setBounds(inDateTf.getX(), clCBox.getY(), descTf.getWidth(), descTf.getHeight());
+
+            stCBox.setBounds(inDateTf.getX(), mechCBox.getY(), descTf.getWidth(), descTf.getHeight());
             descTfLb.setBounds(descTf.getX(), descTf.getY() - 15, descTf.getWidth(), 15);
-            clTfLb.setBounds(clTf.getX(), clTf.getY() - 15, clTf.getWidth(), 15);
-            mechTfLb.setBounds(mechTf.getX(), mechTf.getY() - 15, mechTf.getWidth(), 15);
+            clTfLb.setBounds(clCBox.getX(), clCBox.getY() - 15, clCBox.getWidth(), 15);
+            mechTfLb.setBounds(mechCBox.getX(), mechCBox.getY() - 15, mechCBox.getWidth(), 15);
             inDateTfLb.setBounds(inDateTf.getX(), inDateTf.getY() - 15, inDateTf.getWidth(), 15);
             finDateTfLb.setBounds(finDateTf.getX(), finDateTf.getY() - 15, finDateTf.getWidth(), 15);
             costTfLb.setBounds(costTf.getX(), costTf.getY() - 15, costTf.getWidth(), 15);
-            //stTfLb.setBounds(stTf.getX(), stTf.getY() - 15, stTf.getWidth(), 15);
-            stTfLb.setBounds(cmbBx.getX(), cmbBx.getY() - 15, cmbBx.getWidth(), 15);
+
+            stTfLb.setBounds(stCBox.getX(), stCBox.getY() - 15, stCBox.getWidth(), 15);
+
+            for (int i = 0; i < tbl1.getRowCount(); i++) {
+                mechCBox.addItem(tbl1.getValueAt(i, 1));
+            }
+
+            for (int i = 0; i < tbl2.getRowCount(); i++) {
+                clCBox.addItem(tbl2.getValueAt(i, 1));
+            }
+
             //Размещение кнопки "OK"
             okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
@@ -882,22 +897,12 @@ public class Visual {
 
             setVisible(true);
         }
-        JTextField descTf;
-        JTextField clTf;
-        JTextField mechTf;
-        JTextField inDateTf;
-        JTextField finDateTf;
-        JTextField costTf;
-        //JTextField stTf;
-        String[] variants;
-        JComboBox cmbBx;
-        JLabel descTfLb;
-        JLabel clTfLb;
-        JLabel mechTfLb;
-        JLabel inDateTfLb;
-        JLabel finDateTfLb;
-        JLabel costTfLb;
-        JLabel stTfLb;
+        JTextField descTf, inDateTf, finDateTf, costTf;
+        //JTextField clTf;
+        //JTextField mechTf;
+        JComboBox clCBox, mechCBox, stCBox;
+        String[] clVars, mechVars, stVars;
+        JLabel descTfLb, clTfLb, mechTfLb, inDateTfLb, finDateTfLb, costTfLb, stTfLb;
         JButton okBt;
     }
 
@@ -1179,9 +1184,7 @@ class Filter {
     public boolean filter(String arg, String filterArg) {
         return !arg.contains(filterArg) && !filterArg.equals("");
     }
-    /*public void filter(JTextField tf1, JTextField tf2, JTextField tf3) {
 
-    }*/
 }
 
 
