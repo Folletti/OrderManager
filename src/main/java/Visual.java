@@ -56,10 +56,16 @@ public class Visual {
             JButton addMechBt = new JButton("Добавить механика");
             JButton chMechBt = new JButton("Изменить данные механика");
             JButton delMechBt = new JButton("Удалить механика");
-            JButton mechStatBt = new JButton("Статистика");
+            JButton mechStatBt = new JButton();
 
             Font bigFont = new Font("Verdana", Font.BOLD, 16);
-            mechStatBt.setFont(bigFont);
+            JLabel statBtLb1 = new JLabel("Статистика");
+            JLabel statBtLb2 = new JLabel("механика");
+            mechStatBt.setLayout(null);
+            mechStatBt.add(statBtLb1);
+            mechStatBt.add(statBtLb2);
+            statBtLb1.setFont(bigFont);
+            statBtLb2.setFont(bigFont);
 
             JButton addClBt = new JButton("Добавить клиента");
             JButton chClBt = new JButton("Изменить данные клиента");
@@ -74,23 +80,19 @@ public class Visual {
             refrBtLb1.setFont(bigFont);
             refrBtLb2.setFont(bigFont);
 
-            //refrBtLb2.setLocation(refrBtLb1.getLocation());
-
             colounmHeader1 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Зарплата, руб/час"};
             coloumnHeader2 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Телефон"};
-            coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость", "Статус"};
+            coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость, руб", "Статус"};
 
             tbl1 = new JTable(new Object[20][colounmHeader1.length], colounmHeader1);
             tbl2 = new JTable(new Object[20][coloumnHeader2.length], coloumnHeader2);
             tbl3 = new JTable(new Object[20][coloumnHeader3.length], coloumnHeader3);
 
-            //tbl1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             tbl1.getColumnModel().getColumn(0).setMaxWidth(40);
             tbl2.getColumnModel().getColumn(0).setMaxWidth(40);
             tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
             tbl3.getColumnModel().getColumn(5).setMinWidth(110);
             tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
-            //tbl1.getColumnModel().getColumn(4).set
 
             mechBox = new Box(BoxLayout.Y_AXIS);
             jsp1 = new JScrollPane(tbl1);
@@ -163,24 +165,29 @@ public class Visual {
             //Кнопки редактирования таблиц
             bt = new Rectangle(orBox.getX(), orBox.getY() + orBox.getHeight() + d, (int)((mechBox.getWidth() - 4 * l) / 3.), 30);
 
-            addOrBt.setBounds(bt);
-            addClBt.setBounds(bt.x + bt.width + l, addOrBt.getY(), bt.width, bt.height);
-            addMechBt.setBounds(bt.x + 2 * (bt.width + l), addOrBt.getY(), bt.width, bt.height);
+            addMechBt.setBounds(bt);
+            addClBt.setBounds(bt.x + bt.width + l, addMechBt.getY(), bt.width, bt.height);
+            addOrBt.setBounds(bt.x + 2 * (bt.width + l), addMechBt.getY(), bt.width, bt.height);
 
-            chOrBt.setBounds(bt.x, addOrBt.getY() + addOrBt.getHeight() + d, bt.width, bt.height);
-            chClBt.setBounds(bt.x + bt.width + l, chOrBt.getY(), bt.width, bt.height);
-            chMechBt.setBounds(bt.x + 2 * (bt.width + l), chOrBt.getY(), bt.width, bt.height);
+            chMechBt.setBounds(bt.x, addMechBt.getY() + addMechBt.getHeight() + d, bt.width, bt.height);
+            chClBt.setBounds(bt.x + bt.width + l, chMechBt.getY(), bt.width, bt.height);
+            chOrBt.setBounds(bt.x + 2 * (bt.width + l), chMechBt.getY(), bt.width, bt.height);
 
-            delOrBt.setBounds(bt.x, chOrBt.getY() + chOrBt.getHeight() + d, bt.width, bt.height);
-            delClBt.setBounds(bt.x + bt.width + l, delOrBt.getY(), bt.width, bt.height);
-            delMechBt.setBounds(bt.x + 2 * (bt.width + l), delOrBt.getY(), bt.width, bt.height);
+            delMechBt.setBounds(bt.x, chMechBt.getY() + chMechBt.getHeight() + d, bt.width, bt.height);
+            delClBt.setBounds(bt.x + bt.width + l, delMechBt.getY(), bt.width, bt.height);
+            delOrBt.setBounds(bt.x + 2 * (bt.width + l), delMechBt.getY(), bt.width, bt.height);
 
             //Кнопка вывода статистики
             mechStatBt.setBounds(fr.getWidth() - 200, mechBox.getY(), bt.width - 40, bt.height + 40);
+            statBtLb1.setBounds(mechStatBt.getWidth() / 2 - 50, 12, 100, 15);
+            statBtLb2.setBounds(mechStatBt.getWidth() / 2 - 50, 37, 100, 15);
+            statBtLb1.setHorizontalAlignment(JLabel.CENTER);
+            statBtLb2.setHorizontalAlignment(JLabel.CENTER);
+
             //Кнопка обновления всех таблиц
             refrBt.setBounds(mechStatBt.getX(), fr.getHeight() - 150, mechStatBt.getWidth(), bt.height + 50);
-            refrBtLb1.setBounds(refrBt.getWidth() / 2 - 50, 15, 100, 15);
-            refrBtLb2.setBounds(refrBt.getWidth() / 2 - 50, 40, 100, 15);
+            refrBtLb1.setBounds(refrBt.getWidth() / 2 - 50, 20, 100, 15);
+            refrBtLb2.setBounds(refrBt.getWidth() / 2 - 50, 45, 100, 15);
             refrBtLb1.setHorizontalAlignment(JLabel.CENTER);
             refrBtLb2.setHorizontalAlignment(JLabel.CENTER);
 
@@ -257,7 +264,7 @@ public class Visual {
                     cmps[i].addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyPressed(KeyEvent e) {
-                            if (e.getKeyCode() == 10) dg.okBt.eve
+                            if (e.getKeyCode() == 10) dg.okBt
 
                         }
                     });
@@ -309,7 +316,7 @@ public class Visual {
 
                     });
                 } else {
-                    FailDialog dg = new FailDialog("Ошибка!");
+                    FailDialog dg = new FailDialog("Ошибка!", "Не выбран заказ, который требуется изменить");
                 }
             });
 
@@ -331,7 +338,7 @@ public class Visual {
                         e1.printStackTrace();
                     }
                 } else {
-                    new FailDialog("Ошибка!");
+                    new FailDialog("Ошибка!", "Не выбран заказ, который требуется удалить");
                 }
             });
 
@@ -404,7 +411,7 @@ public class Visual {
 
                     });
                 } else {
-                    new FailDialog("Ошибка!");
+                    new FailDialog("Ошибка!", "Не выбран механик, данные которого требуется изменить");
                 }
             });
 
@@ -426,7 +433,7 @@ public class Visual {
                         e1.printStackTrace();
                     }
                 } else {
-                    new FailDialog("Ошибка!");
+                    new FailDialog("Ошибка!", "Не выбран механик, которого требуется удалить");
                 }
             });
 
@@ -496,7 +503,7 @@ public class Visual {
 
                     });
                 } else {
-                    new FailDialog("Ошибка!");
+                    new FailDialog("Ошибка!", "Не выбран клиент, данные которого требуется изменить");
                 }
             });
 
@@ -518,7 +525,7 @@ public class Visual {
                         e1.printStackTrace();
                     }
                 } else {
-                    new FailDialog("Ошибка!");
+                    new FailDialog("Ошибка!", "Не выбран клиент, которого требуется удалить");
                 }
             });
 
@@ -537,7 +544,18 @@ public class Visual {
             });
 
             mechStatBt.addActionListener( (ActionEvent e) -> {
-                
+                if (tbl1.getSelectedRow() != -1) {
+                    Object[] mech = new Object[colounmHeader1.length];
+                    for (int i = 0; i < mech.length; i++) {
+                        mech[i] = tbl1.getValueAt(tbl1.getSelectedRow(), i);
+                    }
+
+                    int stats = 0;
+                    for (int i = 0; i < maxOrID; i++) {
+                        if (tbl3.getValueAt(i, 3) != null && tbl3.getValueAt(i, 3).equals((String) mech[1])) stats++;
+                    }
+                    new StatsDialog("Статистика механика", (String) mech[1], (String) mech[2], (String) mech[3], (int) mech[4], stats);
+                } else new FailDialog("Ошибка!", "Не выбран механик");
             });
 
 
@@ -1005,13 +1023,13 @@ public class Visual {
 
     //Класс окна сообщения об ошибке из-за не выбранной строки таблицы
     class FailDialog extends JDialog {
-        public FailDialog(String title) {
+        public FailDialog(String title, String message) {
 
             setTitle(title);
-            setBounds(fr.getX() + 250, fr.getY() + 250, 300, 180);
+            setBounds(fr.getX() + 250, fr.getY() + 300, 400, 180);
             setLayout(null);;
 
-            messageLb = new JLabel("Изменяемая строка не выбрана!");
+            messageLb = new JLabel(message);
 
             okBt = new JButton("OK");
 
@@ -1021,7 +1039,7 @@ public class Visual {
 
             //Размещение компонентов
 
-            messageLb.setBounds(40, 10, getWidth(), 50);
+            messageLb.setBounds(getWidth() / 2 - ((int) (message.length() * 6.5)) / 2, 10, (int) (message.length() * 6.5), 50);
 
             //Размещение кнопки "OK"
             okBt.setBounds(getWidth() / 2 - 40, messageLb.getY() + messageLb.getHeight() + 20, 80, 40);
@@ -1046,13 +1064,12 @@ public class Visual {
         new Visual().create();
     }
 
-    class StatDialog extends JDialog {
-        public StatDialog(String title, String sName, String name, String secNm, int sal, int stats) {
+    class StatsDialog extends JDialog {
+        public StatsDialog(String title, String sName, String name, String secNm, int sal, int stats) {
 
             setTitle(title);
             setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 400);
             setLayout(null);
-
 
             sNameLbLb = new JLabel("Фамилия: ");
             nameLbLb = new JLabel("Имя: ");
@@ -1063,41 +1080,56 @@ public class Visual {
             sNameLb = new JLabel(sName);
             nameLb = new JLabel(name);
             secNmLb = new JLabel(secNm);
-            salLb = new JLabel(String.valueOf(sal));
+            salLb = new JLabel(String.valueOf(sal) + " р./час");
             statsLb = new JLabel(String.valueOf(stats));
+
+            Font font = new Font("Verdana", Font.BOLD, 15);
+            sNameLb.setFont(font);
+            nameLb.setFont(font);;
+            secNmLb.setFont(font);
+            salLb.setFont(font);
+            statsLb.setFont(font);
 
             okBt = new JButton("OK");
             add(sNameLb);
             add(nameLb);
             add(secNmLb);
             add(salLb);
+            add(statsLb);
 
             add(sNameLbLb);
             add(nameLbLb);
             add(secNmLbLb);
             add(salLbLb);
+            add(statsLbLb);
 
             add(okBt);
             //Размещение компонентов
-            sNameLb.setBounds(50, 50, 150, 25);
-            nameLb.setBounds(sNameLb.getX(), sNameLb.getY() + sNameLb.getHeight() + d, sNameLb.getWidth(), sNameLb.getHeight());
-            secNmLb.setBounds(sNameLb.getX(), sNameLb.getY() + 2 * (sNameLb.getHeight() + d), sNameLb.getWidth(), sNameLb.getHeight());
-            salLb.setBounds(sNameLb.getX() + sNameLb.getWidth() + l, sNameLb.getY(), sNameLb.getWidth(), sNameLb.getHeight());
-            statsLb.setBounds(sNameLb.getX() + 2 * (sNameLb.getWidth() + l), secNmLb.getY(), sNameLb.getWidth(), sNameLb.getHeight());
 
-            sNameLbLb.setBounds(sNameLb.getX(), sNameLb.getY() - 15, sNameLb.getWidth(), 15);
-            nameLbLb.setBounds(nameLb.getX(), nameLb.getY() - 15, nameLb.getWidth(), 15);
-            secNmLbLb.setBounds(secNmLb.getX(), secNmLb.getY() - 15, secNmLb.getWidth(), 15);
-            salLbLb.setBounds(salLb.getX(), salLb.getY() - 15, salLb.getWidth(), 15);
-            statsLbLb.setBounds(statsLb.getX(), statsLb.getY() - 15, statsLb.getWidth(), 15);
+            sNameLbLb.setBounds(50, 10, 230, 20);
+            nameLbLb.setBounds(sNameLbLb.getX(), sNameLbLb.getY() + sNameLbLb.getHeight() + d, sNameLbLb.getWidth(), sNameLbLb.getHeight());
+            secNmLbLb.setBounds(sNameLbLb.getX(), nameLbLb.getY() + nameLbLb.getHeight() + d, sNameLbLb.getWidth(), sNameLbLb.getHeight());
+            salLbLb.setBounds(sNameLbLb.getX(), secNmLbLb.getY() + secNmLbLb.getHeight() + d, sNameLbLb.getWidth(), sNameLbLb.getHeight());
+            statsLbLb.setBounds(sNameLbLb.getX(), salLbLb.getY() + salLbLb.getHeight() + d, sNameLbLb.getWidth(), sNameLbLb.getHeight());
+
+            sNameLb.setBounds(sNameLbLb.getX() + 230, sNameLbLb.getY(), sNameLbLb.getWidth(), sNameLbLb.getHeight());
+            nameLb.setBounds(sNameLb.getX(), nameLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
+            secNmLb.setBounds(sNameLb.getX(), secNmLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
+            salLb.setBounds(sNameLb.getX(), salLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
+            statsLb.setBounds(sNameLb.getX(), statsLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
+
+            ;
 
             //Размещение кнопки "OK"
-            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 100, bt.width, bt.height);
+            okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 80, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     e.getWindow().dispose();
                 }
+            });
+            okBt.addActionListener( (ActionEvent e) -> {
+                dispose();
             });
             setVisible(true);
         }
