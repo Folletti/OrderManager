@@ -9,9 +9,9 @@ public class Visual {
     public Visual() {}
 
     static final String JDBC_Driver = "com.mysql.cj.jdbc.Driver";
-    static final String DATABASE_URL = "jdbc:mysql://localhost:3306/testbase?useSSL=false";
-    Connection connection;
-    PreparedStatement statement;
+    static final String DATABASE_URL = "jdbc:mysql://localhost:3306/testbase?useSSL=false&allowPublicKeyRetrieval=true";
+    Connection connection = null;
+    PreparedStatement statement = null;
     String sql;
     ResultSet resultSet;
     HashSet <Object> orCol, mechCol, clCol;
@@ -26,19 +26,21 @@ public class Visual {
     JTable tbl1, tbl2, tbl3;
     JScrollPane jsp1, jsp2, jsp3;
     Box mechBox, clBox, orBox;
-    final Status slated = new Status(Status.SLATED);
-    final Status ready = new Status(Status.READY);
-    final Status accepted = new Status(Status.ACCEPTED);
+    final static Status slated = new Status(Status.SLATED);
+    final static Status ready = new Status(Status.READY);
+    final static Status accepted = new Status(Status.ACCEPTED);
+    final static Status undefined = new Status(Status.UNDEFINED);
+    Connector connector;
 
     public void create() {
 
-        try {
+        /*try {*/
 
             //SQL
-            Object driver = Class.forName(JDBC_Driver);
-            connection = null;
-            statement = null;
-            connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");
+            /*Object driver = Class.forName(JDBC_Driver);
+            connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");*/
+            connector = new Connector();
+            connection = connector.connect();
 
             //Swing
             fr = new JFrame("Менеджер заказов");
@@ -210,11 +212,12 @@ public class Visual {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     e.getWindow().dispose();
-                    try {
+                    /*try {
                         connection.close();
                     } catch (SQLException ex) {
                         ex.printStackTrace();
-                    }
+                    }*/
+                    connector.disconnect();
                 }
             });
 
@@ -223,9 +226,9 @@ public class Visual {
             //Действие по нажатию кнопки обновления таблиц
             refrBt.addActionListener((ActionEvent e) -> {
 
-                readClients(tbl2);
-                readMech(tbl1);
-                readOrders(tbl3);
+                readClients();
+                readMech();
+                readOrders();
 
             });
 
@@ -247,7 +250,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readOrders(tbl3);
+                        readOrders();
 
                         dg.dispose();
 
@@ -305,7 +308,7 @@ public class Visual {
                             statement = connection.prepareStatement(sql);
                             statement.executeUpdate();
 
-                            readOrders(tbl3);
+                            readOrders();
 
                             dg.dispose();
 
@@ -332,7 +335,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readOrders(tbl3);
+                        readOrders();
 
                     } catch (SQLException e1) {
                         e1.printStackTrace();
@@ -359,7 +362,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readMech(tbl1);
+                        readMech();
 
                         dg.dispose();
 
@@ -400,7 +403,7 @@ public class Visual {
                             statement = connection.prepareStatement(sql);
                             statement.executeUpdate();
 
-                            readMech(tbl1);
+                            readMech();
 
                             dg.dispose();
 
@@ -427,7 +430,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readMech(tbl1);
+                        readMech();
 
                     } catch (SQLException e1) {
                         e1.printStackTrace();
@@ -453,7 +456,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readClients(tbl2);
+                        readClients();
 
                         dg.dispose();
 
@@ -492,7 +495,7 @@ public class Visual {
                             statement = connection.prepareStatement(sql);
                             statement.executeUpdate();
 
-                            readClients(tbl2);
+                            readClients();
 
                             dg.dispose();
 
@@ -519,7 +522,7 @@ public class Visual {
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
-                        readClients(tbl2);
+                        readClients();
 
                     } catch (SQLException e1) {
                         e1.printStackTrace();
@@ -534,7 +537,7 @@ public class Visual {
                 Status st = new Status(statFltr.getSelectedItem().toString());
                 Filter filter = new Filter(descFltr.getText(), clFltr.getText(), st);
 
-                readOrders(tbl3, filter);
+                readOrders(filter);
 
                 //Здесь использовать коллекцию
 
@@ -559,17 +562,17 @@ public class Visual {
             });
 
 
-        } catch (ClassNotFoundException e1) {
+        /*} catch (ClassNotFoundException e1) {
             e1.printStackTrace();
         } catch (SQLException e2) {
             e2.printStackTrace();
-        }
+        }*/
 
 
     }
 
     //Объявление метода обновления таблицы персонала
-    public void readMech(JTable tbl) {
+    public void readMech() {
         try {
 
             sql = "select count(*) as count from staff";
@@ -622,7 +625,7 @@ public class Visual {
     }
 
     //Объявление метода обновление таблицы клиентов
-    public void readClients(JTable tbl) {
+    public void readClients() {
 
         try {
 
@@ -681,7 +684,7 @@ public class Visual {
     }
 
     //Объявление метода обновления таблицы заказов
-    public void readOrders(JTable tbl) {
+    public void readOrders() {
         try {
 
             //Получение максимальных ID из БД для создания таблиц
@@ -745,16 +748,16 @@ public class Visual {
         }
     }
 
-    public void readOrders(JTable tbl, Filter filter) {
+    public void readOrders(Filter filter) {
         try {
 
             //Получение максимальных ID из БД для создания таблиц
 
-            sql = "select max(id) as max_id from orders";
+            sql = "select count(*) as count from orders";
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
-            countOrders = resultSet.getInt("max_id");
+            countOrders = resultSet.getInt("count");
 
             //Генерация новой таблицы
             orBox.setVisible(false);
@@ -780,9 +783,12 @@ public class Visual {
                 int cost = resultSet.getInt("cost");
                 String status = resultSet.getString("status");
 
-                if (filter.filter(client, filter.getClient()) ||
+
+
+                if (!filter.filter(new Filter(description, client, new Status(status)))) continue;
+                /*if (filter.filter(client, filter.getClient()) ||
                         filter.filter(description, filter.getDesc()) ||
-                        filter.filter(status, filter.getStatus().toString())) continue;
+                        filter.filter(status, filter.getStatus().toString())) continue;*/
 
                 tbl3.setValueAt(id, count, 0);
                 tbl3.setValueAt(description, count, 1);
@@ -1123,8 +1129,6 @@ public class Visual {
             salLb.setBounds(sNameLb.getX(), salLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
             statsLb.setBounds(sNameLb.getX(), statsLbLb.getY(), sNameLb.getWidth(), sNameLbLb.getHeight());
 
-            ;
-
             //Размещение кнопки "OK"
             okBt.setBounds(getWidth() / 2 - bt.width / 2, getHeight() - 80, bt.width, bt.height);
             addWindowListener(new WindowAdapter() {
@@ -1177,12 +1181,32 @@ class Filter {
         this.status = status;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Filter real = (Filter) o;
+        return getClient().equals(real.getClient())
+                && getDesc().equals(real.getDesc())
+                && getStatus().equals(real.getStatus());
+    }
+
     private String desc = "";
     private String client = "";
     private Status status;
 
-    public boolean filter(String arg, String filterArg) {
+    /*public boolean filter(String arg, String filterArg) {
         return !arg.contains(filterArg) && !filterArg.equals("");
+    }*/
+
+    public boolean isNotZero() {
+        return !equals(new Filter("","",Visual.undefined));
+    }
+
+    public boolean filter(Filter values) {
+        return (values.getDesc().contains(getDesc()) && !getDesc().equals("")
+                || values.getClient().contains(getClient()) && !getClient().equals("")
+                || values.getStatus().toString().contains(getStatus().toString()) && !getStatus().toString().equals("")
+                || !isNotZero());
     }
 
 }
@@ -1192,13 +1216,14 @@ class Status {
     Status(String status) {
         if (status.equals(SLATED) || status.equals(READY) || status.equals(ACCEPTED)) {
             this.status = status;
-        } else this.status = "";
+        } else this.status = UNDEFINED;
     }
     final static String SLATED = "Запланирован";
     final static String READY = "Выполнен";
     final static String ACCEPTED = "Принят клиентом";
+    final static String UNDEFINED = "";
 
-    private String status = "";
+    private String status = UNDEFINED;
 
     @Override
     public String toString() {
@@ -1208,13 +1233,19 @@ class Status {
     public void setStatus(String status) {
         if (status.equals(SLATED) || status.equals(READY) || status.equals(ACCEPTED)) {
             this.status = status;
-        } else this.status = "";
+        } else this.status = UNDEFINED;
     }
 
-    public String getStatus() {
-        return status;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Status status = (Status) o;
+        return status.toString().equals(toString());
+
     }
+
 
 
 }
+
 
