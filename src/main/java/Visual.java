@@ -212,11 +212,7 @@ public class Visual {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     e.getWindow().dispose();
-                    /*try {
-                        connection.close();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }*/
+
                     connector.disconnect();
                 }
             });
@@ -539,10 +535,6 @@ public class Visual {
 
                 readOrders(filter);
 
-                //Здесь использовать коллекцию
-
-                //for (int i = 0; i < tbl3.)
-
 
             });
 
@@ -695,12 +687,19 @@ public class Visual {
             resultSet.next();
             countOrders = resultSet.getInt("count");
 
+            int selRow = tbl3.getSelectedRow();
+            //JScrollBar scrollState = jsp3.getVerticalScrollBar();
+
             //Генерация новой таблицы
             orBox.setVisible(false);
             orBox.remove(jsp3);
             tbl3 = new JTable(new Object[countOrders][coloumnHeader3.length], coloumnHeader3);
             jsp3 = new JScrollPane(tbl3);
+            //jsp3.setVerticalScrollBar(scrollState);
             orBox.add(jsp3);
+
+            tbl3.changeSelection(selRow,0, false, false);
+
             orBox.setVisible(true);
 
             sql = "SELECT * FROM orders";
@@ -784,11 +783,7 @@ public class Visual {
                 String status = resultSet.getString("status");
 
 
-
                 if (!filter.filter(new Filter(description, client, new Status(status)))) continue;
-                /*if (filter.filter(client, filter.getClient()) ||
-                        filter.filter(description, filter.getDesc()) ||
-                        filter.filter(status, filter.getStatus().toString())) continue;*/
 
                 tbl3.setValueAt(id, count, 0);
                 tbl3.setValueAt(description, count, 1);
@@ -904,8 +899,6 @@ public class Visual {
             setVisible(true);
         }
         JTextField descTf, inDateTf, finDateTf, costTf;
-        //JTextField clTf;
-        //JTextField mechTf;
         JComboBox clCBox, mechCBox, stCBox;
         String[] clVars, mechVars, stVars;
         JLabel descTfLb, clTfLb, mechTfLb, inDateTfLb, finDateTfLb, costTfLb, stTfLb;
@@ -1194,19 +1187,14 @@ class Filter {
     private String client = "";
     private Status status;
 
-    /*public boolean filter(String arg, String filterArg) {
-        return !arg.contains(filterArg) && !filterArg.equals("");
-    }*/
-
     public boolean isNotZero() {
         return !equals(new Filter("","",Visual.undefined));
     }
 
     public boolean filter(Filter values) {
-        return (values.getDesc().contains(getDesc()) && !getDesc().equals("")
-                || values.getClient().contains(getClient()) && !getClient().equals("")
-                || values.getStatus().toString().contains(getStatus().toString()) && !getStatus().toString().equals("")
-                || !isNotZero());
+        return ((values.getDesc().toLowerCase().contains(getDesc().toLowerCase()) || getDesc().equals(""))
+                && (values.getClient().toLowerCase().contains(getClient().toLowerCase()) || getClient().equals(""))
+                && (values.getStatus().toString().toLowerCase().contains(getStatus().toString().toLowerCase()) || getStatus().toString().equals("")));
     }
 
 }
