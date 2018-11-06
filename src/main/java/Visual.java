@@ -1,8 +1,13 @@
 import javax.swing.*;
+import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.text.Format;
+import java.text.ParseException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.time.*;
 
 
 public class Visual {
@@ -31,233 +36,239 @@ public class Visual {
     final static Status accepted = new Status(Status.ACCEPTED);
     final static Status undefined = new Status(Status.UNDEFINED);
     Connector connector;
+    MaskFormatter   dateTxFldFormatter = null,
+                    telTxFlFormatter = null,
+                    sqlTelFormatter = null;
+    DateTimeFormatter normFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy г.");
+    DateTimeFormatter sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    Font smallFont = new Font("Verdana", Font.BOLD, 14);
+    Font font = new Font("Verdana", Font.BOLD, 15);
 
     public void create() {
 
-        /*try {*/
+        connector = new Connector();
+        connection = connector.connect();
 
-            //SQL
-            /*Object driver = Class.forName(JDBC_Driver);
-            connection = DriverManager.getConnection(DATABASE_URL, "root", "1234");*/
-            connector = new Connector();
-            connection = connector.connect();
+        //Swing
+        fr = new JFrame("Менеджер заказов");
+        JPanel pn = new JPanel();
+        pn.setLayout(null);
+        fr.setLayout(new BorderLayout());
 
-            //Swing
-            fr = new JFrame("Менеджер заказов");
-            JPanel pn = new JPanel();
-            pn.setLayout(null);
-            fr.setLayout(new BorderLayout());
+        fr.setBounds(200, 50, 950, 700);
+        JButton addOrBt = new JButton("Добавить заказ");
+        JButton chOrBt = new JButton("Изменить заказ");
+        JButton delOrBt = new JButton("Удалить заказ");
 
-            fr.setBounds(200, 50, 950, 700);
-            JButton addOrBt = new JButton("Добавить заказ");
-            JButton chOrBt = new JButton("Изменить заказ");
-            JButton delOrBt = new JButton("Удалить заказ");
+        JButton orFltrBt = new JButton("Фильтровать");
 
-            JButton orFltrBt = new JButton("Фильтровать");
-
-            JButton addMechBt = new JButton("Добавить механика");
-            JButton chMechBt = new JButton("Изменить данные механика");
-            JButton delMechBt = new JButton("Удалить механика");
-            JButton mechStatBt = new JButton();
-
-            Font bigFont = new Font("Verdana", Font.BOLD, 16);
-            JLabel statBtLb1 = new JLabel("Статистика");
-            JLabel statBtLb2 = new JLabel("механика");
-            mechStatBt.setLayout(null);
-            mechStatBt.add(statBtLb1);
-            mechStatBt.add(statBtLb2);
-            statBtLb1.setFont(bigFont);
-            statBtLb2.setFont(bigFont);
-
-            JButton addClBt = new JButton("Добавить клиента");
-            JButton chClBt = new JButton("Изменить данные клиента");
-            JButton delClBt = new JButton("Удалить клиента");
-
-            JButton refrBt = new JButton();
-            JLabel refrBtLb1 = new JLabel("Обновить");
-            JLabel refrBtLb2 = new JLabel("таблицы");
-            refrBt.setLayout(null);
-            refrBt.add(refrBtLb1);
-            refrBt.add(refrBtLb2);
-            refrBtLb1.setFont(bigFont);
-            refrBtLb2.setFont(bigFont);
-
-            colounmHeader1 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Зарплата, руб/час"};
-            coloumnHeader2 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Телефон"};
-            coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость, руб", "Статус"};
-
-            tbl1 = new JTable(new Object[20][colounmHeader1.length], colounmHeader1);
-            tbl2 = new JTable(new Object[20][coloumnHeader2.length], coloumnHeader2);
-            tbl3 = new JTable(new Object[20][coloumnHeader3.length], coloumnHeader3);
-
-            tbl1.getColumnModel().getColumn(0).setMaxWidth(40);
-            tbl2.getColumnModel().getColumn(0).setMaxWidth(40);
-            tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
-            tbl3.getColumnModel().getColumn(5).setMinWidth(110);
-            tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
-
-            mechBox = new Box(BoxLayout.Y_AXIS);
-            jsp1 = new JScrollPane(tbl1);
-            mechBox.add(jsp1);
-            JLabel mechBxLb = new JLabel("Список механиков: ");
-            mechBxLb.setHorizontalAlignment(JLabel.CENTER);
-            Font verdana = new Font("Verdana", Font.BOLD, 14);
-            mechBxLb.setFont(verdana);
-
-            clBox = new Box(BoxLayout.Y_AXIS);
-            jsp2 = new JScrollPane(tbl2);
-            clBox.add(jsp2);
-            JLabel clBxLb = new JLabel("Список клиентов: ");
-            clBxLb.setHorizontalAlignment(JLabel.CENTER);
-            clBxLb.setFont(verdana);
-
-            orBox = new Box(BoxLayout.Y_AXIS);
-            jsp3 = new JScrollPane(tbl3);
-            orBox.add(jsp3);
-
-            JLabel orBxLb = new JLabel("Список заказов: ");
-            orBxLb.setHorizontalAlignment(JLabel.CENTER);
-            orBxLb.setFont(verdana);
-
-            //Создание текстовых полей и надписей фильтра
-            JTextField clFltr = new JTextField();
-            //JTextField statFltr = new JTextField();
-            String[] variants = new String[] {"", "Запланирован", "Выполнен", "Принят клиентом"};
-            JComboBox statFltr = new JComboBox(variants);
-            JTextField descFltr = new JTextField();
-            JLabel clFltrLb = new JLabel("Фамилия клиента");
-            JLabel statFltrLb = new JLabel("Статус");
-            JLabel descFltrLb = new JLabel("Описание заказа");
-
-            fr.add(pn, BorderLayout.CENTER);
-            pn.add(addOrBt);
-            pn.add(delOrBt);
-            pn.add(addMechBt);
-            pn.add(delMechBt);
-            pn.add(refrBt);
-            pn.add(chClBt);
-            pn.add(chMechBt);
-            pn.add(chOrBt);
-            pn.add(mechStatBt);
-            pn.add(orFltrBt);
-            pn.add(addClBt);
-            pn.add(delClBt);
-
-            pn.add(clFltr);
-            pn.add(descFltr);
-            pn.add(statFltr);
-            pn.add(clFltrLb);
-            pn.add(descFltrLb);
-            pn.add(statFltrLb);
-
-            pn.add(mechBox);
-            pn.add(clBox);
-            pn.add(orBox);
-            pn.add(mechBxLb);
-            pn.add(clBxLb);
-            pn.add(orBxLb);
-
-            mechBox.setBounds(l, d, fr.getWidth() - 250, (fr.getHeight() - 230 - 2 * d) / 3);
-            mechBxLb.setBounds(mechBox.getX(), mechBox.getY() - 15, mechBox.getWidth(), 15);
-            clBox.setBounds(l, mechBox.getY() + mechBox.getHeight() + d, mechBox.getWidth(), mechBox.getHeight());
-            clBxLb.setBounds(clBox.getX(), clBox.getY() - 15, clBox.getWidth(), 15);
-            orBox.setBounds(l, mechBox.getY() + 2 * (mechBox.getHeight() + d), mechBox.getWidth(), mechBox.getHeight());
-            orBxLb.setBounds(orBox.getX(), orBox.getY() - 15, orBox.getWidth(), 15);
-
-            //Кнопки редактирования таблиц
-            bt = new Rectangle(orBox.getX(), orBox.getY() + orBox.getHeight() + d, (int)((mechBox.getWidth() - 4 * l) / 3.), 30);
-
-            addMechBt.setBounds(bt);
-            addClBt.setBounds(bt.x + bt.width + l, addMechBt.getY(), bt.width, bt.height);
-            addOrBt.setBounds(bt.x + 2 * (bt.width + l), addMechBt.getY(), bt.width, bt.height);
-
-            chMechBt.setBounds(bt.x, addMechBt.getY() + addMechBt.getHeight() + d, bt.width, bt.height);
-            chClBt.setBounds(bt.x + bt.width + l, chMechBt.getY(), bt.width, bt.height);
-            chOrBt.setBounds(bt.x + 2 * (bt.width + l), chMechBt.getY(), bt.width, bt.height);
-
-            delMechBt.setBounds(bt.x, chMechBt.getY() + chMechBt.getHeight() + d, bt.width, bt.height);
-            delClBt.setBounds(bt.x + bt.width + l, delMechBt.getY(), bt.width, bt.height);
-            delOrBt.setBounds(bt.x + 2 * (bt.width + l), delMechBt.getY(), bt.width, bt.height);
-
-            //Кнопка вывода статистики
-            mechStatBt.setBounds(fr.getWidth() - 200, mechBox.getY(), bt.width - 40, bt.height + 40);
-            statBtLb1.setBounds(mechStatBt.getWidth() / 2 - 50, 12, 100, 15);
-            statBtLb2.setBounds(mechStatBt.getWidth() / 2 - 50, 37, 100, 15);
-            statBtLb1.setHorizontalAlignment(JLabel.CENTER);
-            statBtLb2.setHorizontalAlignment(JLabel.CENTER);
-
-            //Кнопка обновления всех таблиц
-            refrBt.setBounds(mechStatBt.getX(), fr.getHeight() - 150, mechStatBt.getWidth(), bt.height + 50);
-            refrBtLb1.setBounds(refrBt.getWidth() / 2 - 50, 20, 100, 15);
-            refrBtLb2.setBounds(refrBt.getWidth() / 2 - 50, 45, 100, 15);
-            refrBtLb1.setHorizontalAlignment(JLabel.CENTER);
-            refrBtLb2.setHorizontalAlignment(JLabel.CENTER);
-
-            //Текстовые поля фильтра
-            clFltr.setBounds(orBox.getX() + orBox.getWidth() + l, orBox.getY(), 150, 25);
-            descFltr.setBounds(clFltr.getX(), clFltr.getY() + clFltr.getHeight() + d, clFltr.getWidth(), clFltr.getHeight());
-            statFltr.setBounds(clFltr.getX(), descFltr.getY() + descFltr.getHeight() + d, clFltr.getWidth(), clFltr.getHeight());
-
-            //Надписи фильтра
-            clFltrLb.setBounds(clFltr.getX(), clFltr.getY() - 15, clFltr.getWidth(), 15);
-            descFltrLb.setBounds(clFltr.getX(), descFltr.getY() - 15, descFltr.getWidth(), 15);
-            statFltrLb.setBounds(clFltr.getX(), statFltr.getY() - 15, statFltr.getWidth(), 15);
-
-            //Кнопка фильтра
-            orFltrBt.setBounds(statFltr.getX(), statFltr.getY() + statFltr.getHeight() + d, mechStatBt.getWidth(), bt.height);
+        JButton addMechBt = new JButton("Добавить механика");
+        JButton chMechBt = new JButton("Изменить данные механика");
+        JButton delMechBt = new JButton("Удалить механика");
+        JButton mechStatBt = new JButton();
 
 
-            fr.addWindowListener(new WindowAdapter() {
+        JLabel statBtLb1 = new JLabel("Статистика");
+        JLabel statBtLb2 = new JLabel("механика");
+        mechStatBt.setLayout(null);
+        mechStatBt.add(statBtLb1);
+        mechStatBt.add(statBtLb2);
+        statBtLb1.setFont(smallFont);
+        statBtLb2.setFont(smallFont);
 
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    e.getWindow().dispose();
+        JButton addClBt = new JButton("Добавить клиента");
+        JButton chClBt = new JButton("Изменить данные клиента");
+        JButton delClBt = new JButton("Удалить клиента");
 
-                    connector.disconnect();
+        JButton refrBt = new JButton();
+        JLabel refrBtLb1 = new JLabel("Обновить");
+        JLabel refrBtLb2 = new JLabel("таблицы");
+        refrBt.setLayout(null);
+        refrBt.add(refrBtLb1);
+        refrBt.add(refrBtLb2);
+        refrBtLb1.setFont(smallFont);
+        refrBtLb2.setFont(smallFont);
+
+        colounmHeader1 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Зарплата, руб/час"};
+        coloumnHeader2 = new Object[] {"ID", "Фамилия", "Имя", "Отчество", "Телефон"};
+        coloumnHeader3 = new Object[] {"ID", "Описание", "Клиент", "Механик", "Дата создания", "Дата выполнения", "Стоимость, руб", "Статус"};
+
+        tbl1 = new JTable(new Object[20][colounmHeader1.length], colounmHeader1);
+        tbl2 = new JTable(new Object[20][coloumnHeader2.length], coloumnHeader2);
+        tbl3 = new JTable(new Object[20][coloumnHeader3.length], coloumnHeader3);
+
+        tbl1.getColumnModel().getColumn(0).setMaxWidth(40);
+        tbl2.getColumnModel().getColumn(0).setMaxWidth(40);
+        tbl3.getColumnModel().getColumn(0).setMaxWidth(40);
+        tbl3.getColumnModel().getColumn(5).setMinWidth(110);
+        tbl3.getColumnModel().getColumn(5).setMaxWidth(300);
+
+        mechBox = new Box(BoxLayout.Y_AXIS);
+        jsp1 = new JScrollPane(tbl1);
+        mechBox.add(jsp1);
+        JLabel mechBxLb = new JLabel("Список механиков: ");
+        mechBxLb.setHorizontalAlignment(JLabel.CENTER);
+        mechBxLb.setFont(smallFont);
+
+        clBox = new Box(BoxLayout.Y_AXIS);
+        jsp2 = new JScrollPane(tbl2);
+        clBox.add(jsp2);
+        JLabel clBxLb = new JLabel("Список клиентов: ");
+        clBxLb.setHorizontalAlignment(JLabel.CENTER);
+        clBxLb.setFont(smallFont);
+
+        orBox = new Box(BoxLayout.Y_AXIS);
+        jsp3 = new JScrollPane(tbl3);
+        orBox.add(jsp3);
+
+        JLabel orBxLb = new JLabel("Список заказов: ");
+        orBxLb.setHorizontalAlignment(JLabel.CENTER);
+        orBxLb.setFont(smallFont);
+
+        //Создание текстовых полей и надписей фильтра
+        JTextField clFltr = new JTextField();
+        //JTextField statFltr = new JTextField();
+        String[] variants = new String[] {"", "Запланирован", "Выполнен", "Принят клиентом"};
+        JComboBox statFltr = new JComboBox(variants);
+        JTextField descFltr = new JTextField();
+        JLabel clFltrLb = new JLabel("Фамилия клиента");
+        JLabel statFltrLb = new JLabel("Статус");
+        JLabel descFltrLb = new JLabel("Описание заказа");
+
+        fr.add(pn, BorderLayout.CENTER);
+        pn.add(addOrBt);
+        pn.add(delOrBt);
+        pn.add(addMechBt);
+        pn.add(delMechBt);
+        pn.add(refrBt);
+        pn.add(chClBt);
+        pn.add(chMechBt);
+        pn.add(chOrBt);
+        pn.add(mechStatBt);
+        pn.add(orFltrBt);
+        pn.add(addClBt);
+        pn.add(delClBt);
+
+        pn.add(clFltr);
+        pn.add(descFltr);
+        pn.add(statFltr);
+        pn.add(clFltrLb);
+        pn.add(descFltrLb);
+        pn.add(statFltrLb);
+
+        pn.add(mechBox);
+        pn.add(clBox);
+        pn.add(orBox);
+        pn.add(mechBxLb);
+        pn.add(clBxLb);
+        pn.add(orBxLb);
+
+        mechBox.setBounds(l, d, fr.getWidth() - 250, (fr.getHeight() - 230 - 2 * d) / 3);
+        mechBxLb.setBounds(mechBox.getX(), mechBox.getY() - 15, mechBox.getWidth(), 15);
+        clBox.setBounds(l, mechBox.getY() + mechBox.getHeight() + d, mechBox.getWidth(), mechBox.getHeight());
+        clBxLb.setBounds(clBox.getX(), clBox.getY() - 15, clBox.getWidth(), 15);
+        orBox.setBounds(l, mechBox.getY() + 2 * (mechBox.getHeight() + d), mechBox.getWidth(), mechBox.getHeight());
+        orBxLb.setBounds(orBox.getX(), orBox.getY() - 15, orBox.getWidth(), 15);
+
+        //Кнопки редактирования таблиц
+        bt = new Rectangle(orBox.getX(), orBox.getY() + orBox.getHeight() + d, (int)((mechBox.getWidth() - 4 * (l - 5)) / 3.), 30);
+
+        addMechBt.setBounds(bt);
+        addClBt.setBounds(bt.x + bt.width + l, addMechBt.getY(), bt.width, bt.height);
+        addOrBt.setBounds(bt.x + 2 * (bt.width + l), addMechBt.getY(), bt.width, bt.height);
+
+        chMechBt.setBounds(bt.x, addMechBt.getY() + addMechBt.getHeight() + d, bt.width, bt.height);
+        chClBt.setBounds(bt.x + bt.width + l, chMechBt.getY(), bt.width, bt.height);
+        chOrBt.setBounds(bt.x + 2 * (bt.width + l), chMechBt.getY(), bt.width, bt.height);
+
+        delMechBt.setBounds(bt.x, chMechBt.getY() + chMechBt.getHeight() + d, bt.width, bt.height);
+        delClBt.setBounds(bt.x + bt.width + l, delMechBt.getY(), bt.width, bt.height);
+        delOrBt.setBounds(bt.x + 2 * (bt.width + l), delMechBt.getY(), bt.width, bt.height);
+
+        //Кнопка вывода статистики
+        mechStatBt.setBounds(fr.getWidth() - 200, mechBox.getY(), bt.width - 40, bt.height + 40);
+        statBtLb1.setBounds(mechStatBt.getWidth() / 2 - 50, 12, 100, 15);
+        statBtLb2.setBounds(mechStatBt.getWidth() / 2 - 50, 37, 100, 15);
+        statBtLb1.setHorizontalAlignment(JLabel.CENTER);
+        statBtLb2.setHorizontalAlignment(JLabel.CENTER);
+
+        //Кнопка обновления всех таблиц
+        refrBt.setBounds(mechStatBt.getX(), fr.getHeight() - 150, mechStatBt.getWidth(), bt.height + 50);
+        refrBtLb1.setBounds(refrBt.getWidth() / 2 - 50, 20, 100, 15);
+        refrBtLb2.setBounds(refrBt.getWidth() / 2 - 50, 45, 100, 15);
+        refrBtLb1.setHorizontalAlignment(JLabel.CENTER);
+        refrBtLb2.setHorizontalAlignment(JLabel.CENTER);
+
+        //Текстовые поля фильтра
+        clFltr.setBounds(orBox.getX() + orBox.getWidth() + l, orBox.getY(), 150, 25);
+        descFltr.setBounds(clFltr.getX(), clFltr.getY() + clFltr.getHeight() + d, clFltr.getWidth(), clFltr.getHeight());
+        statFltr.setBounds(clFltr.getX(), descFltr.getY() + descFltr.getHeight() + d, clFltr.getWidth(), clFltr.getHeight());
+
+        //Надписи фильтра
+        clFltrLb.setBounds(clFltr.getX(), clFltr.getY() - 15, clFltr.getWidth(), 15);
+        descFltrLb.setBounds(clFltr.getX(), descFltr.getY() - 15, descFltr.getWidth(), 15);
+        statFltrLb.setBounds(clFltr.getX(), statFltr.getY() - 15, statFltr.getWidth(), 15);
+
+        //Кнопка фильтра
+        orFltrBt.setBounds(statFltr.getX(), statFltr.getY() + statFltr.getHeight() + d, mechStatBt.getWidth(), bt.height);
+
+
+        fr.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                e.getWindow().dispose();
+
+                connector.disconnect();
+            }
+        });
+
+        fr.setVisible(true);
+
+        //Действие по нажатию кнопки обновления таблиц
+        refrBt.addActionListener((ActionEvent e) -> {
+
+            readClients();
+            readMech();
+            readOrders();
+
+        });
+
+        //Действие по нажатию кнопки добавления заказа
+        addOrBt.addActionListener((ActionEvent e) -> {
+
+            //Создание диалогового окна добавления заказа
+
+            OrderDialog dg = new OrderDialog("Добавление заказа");
+
+            dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                LocalDate initDate = LocalDate.parse(dg.inDateTf.getText(), normFormatter);
+                //initDate.format(sqlFormatter);
+                LocalDate finDate = LocalDate.parse(dg.finDateTf.getText(), normFormatter);
+                //finDate.format(sqlFormatter);
+
+                try {
+
+                    sql = "INSERT into orders values (null, '" + dg.descTf.getText() + "', '" +
+                            dg.clCBox.getSelectedItem() + "', '" + dg.mechCBox.getSelectedItem() + "', '" + initDate.format(sqlFormatter) + "', '" +
+                            finDate.format(sqlFormatter) + "', " + dg.costTf.getText() + ", '" + dg.stCBox.getSelectedItem() + "')";
+
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
+
+                    readOrders();
+
+                    dg.dispose();
+
+
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
                 }
-            });
-
-            fr.setVisible(true);
-
-            //Действие по нажатию кнопки обновления таблиц
-            refrBt.addActionListener((ActionEvent e) -> {
-
-                readClients();
-                readMech();
-                readOrders();
 
             });
 
-            //Действие по нажатию кнопки добавления заказа
-            addOrBt.addActionListener((ActionEvent e) -> {
-
-                //Создание диалогового окна добавления заказа
-
-                OrderDialog dg = new OrderDialog("Добавление заказа");
-
-                dg.okBt.addActionListener((ActionEvent ev) -> {
-
-                    try {
-
-                        sql = "INSERT into orders values (null, '" + dg.descTf.getText() + "', '" +
-                                dg.clCBox.getSelectedItem() + "', '" + dg.mechCBox.getSelectedItem() + "', '" + dg.inDateTf.getText() + "', '" +
-                                dg.finDateTf.getText() + "', " + dg.costTf.getText() + ", '" + dg.stCBox.getSelectedItem() + "')";
-
-                        statement = connection.prepareStatement(sql);
-                        statement.executeUpdate();
-
-                        readOrders();
-
-                        dg.dispose();
-
-
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
-
-                });
-
-                //Код для выполнения по нажатию "Enter"
+            //Код для выполнения по нажатию "Enter"
                 /*Component[] cmps = dg.getContentPane().getComponents();
                 for (int i = 0; i < cmps.length; i++) {
                     cmps[i].addKeyListener(new KeyAdapter() {
@@ -271,183 +282,250 @@ public class Visual {
 
 
 
-            });
+        });
 
-            //Действие кнопки изменения выбранного заказа
-            chOrBt.addActionListener( (ActionEvent e) -> {
+        //Действие кнопки изменения выбранного заказа
+        chOrBt.addActionListener( (ActionEvent e) -> {
 
-                //Создание диалогового окна изменения заказа
+            //Создание диалогового окна изменения заказа
 
-                if (tbl3.getSelectedRow() != -1) {
+            if (tbl3.getSelectedRow() != -1) {
 
-                    OrderDialog dg = new OrderDialog("Изменение заказа");
+                OrderDialog dg = new OrderDialog("Изменение заказа");
 
-                    Component[] ncomp = dg.getContentPane().getComponents();
+                int selRow = tbl3.getSelectedRow();
 
-                    for (int i = 0; i < ncomp.length; i++) {
-                        if (ncomp[i] instanceof JTextField) {
-                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
-                        } else if (ncomp[i] instanceof JComboBox) {
-                            ((JComboBox) ncomp[i]).setSelectedItem(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
-                        }
+                LocalDate initDate = LocalDate.parse(String.valueOf(tbl3.getValueAt(selRow, 4)), normFormatter);
+                //initDate.format(sqlFormatter);
+                LocalDate finDate = LocalDate.parse(String.valueOf(tbl3.getValueAt(selRow, 5)), normFormatter);
+                //finDate.format(sqlFormatter);
+
+                Component[] ncomp = dg.getContentPane().getComponents();
+
+                for (int i = 0; i < ncomp.length; i++) {
+                    if (ncomp[i] instanceof JFormattedTextField) {
+                        ((JFormattedTextField) ncomp[i++]).setText(initDate.format(normFormatter));
+                        ((JFormattedTextField) ncomp[i]).setText(finDate.format(normFormatter));
+                    } else if (ncomp[i] instanceof JTextField) {
+                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
+                    } else if (ncomp[i] instanceof JComboBox) {
+                        ((JComboBox) ncomp[i]).setSelectedItem(String.valueOf(tbl3.getValueAt(tbl3.getSelectedRow(), i + 1)));
                     }
-
-                    dg.okBt.addActionListener((ActionEvent ev) -> {
-
-                        try {
-                            Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
-
-                            sql = "UPDATE orders SET description = '" + dg.descTf.getText() + "', client = '" +
-                                    dg.clCBox.getSelectedItem() + "', mech = '" + dg.mechCBox.getSelectedItem() + "', init_date = '" + dg.inDateTf.getText() + "', fin_date = '" +
-                                    dg.finDateTf.getText() + "', cost = " + dg.costTf.getText() + ", status = '" + dg.stCBox.getSelectedItem() + "' where id = " + (int) rowId;
-
-                            statement = connection.prepareStatement(sql);
-                            statement.executeUpdate();
-
-                            readOrders();
-
-                            dg.dispose();
-
-
-                        } catch (SQLException e1) {
-                            e1.printStackTrace();
-                        }
-
-                    });
-                } else {
-                    FailDialog dg = new FailDialog("Ошибка!", "Не выбран заказ, который требуется изменить");
                 }
-            });
 
-            //Действие кнопки удаления заказа
-            delOrBt.addActionListener( (ActionEvent e) -> {
-                if (tbl3.getSelectedRow() != -1) {
+                dg.okBt.addActionListener((ActionEvent ev) -> {
+
                     try {
-
                         Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
 
-                        sql = "DELETE from orders where id = " + (int) rowId;
+                        LocalDate newInitDate = LocalDate.parse(dg.inDateTf.getText(), normFormatter);
+                        LocalDate newFinDate = LocalDate.parse(dg.finDateTf.getText(), normFormatter);
+
+                        sql = "UPDATE orders SET description = '" + dg.descTf.getText() + "', client = '" +
+                                dg.clCBox.getSelectedItem() + "', mech = '" + dg.mechCBox.getSelectedItem() + "', init_date = '" + newInitDate.format(sqlFormatter) + "', fin_date = '" +
+                                newFinDate.format(sqlFormatter) + "', cost = " + dg.costTf.getText() + ", status = '" + dg.stCBox.getSelectedItem() + "' where id = " + (int) rowId;
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
                         readOrders();
 
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
-                } else {
-                    new FailDialog("Ошибка!", "Не выбран заказ, который требуется удалить");
-                }
-            });
-
-            //Действие кнопки добавления механика
-            addMechBt.addActionListener( (ActionEvent e) -> {
-
-                //Создание диалогового окна добавления механика
-
-                MechDialog dg = new MechDialog("Добавление механика");
-
-                dg.okBt.addActionListener((ActionEvent ev) -> {
-
-                    try {
-
-                        sql = "INSERT into staff values (null, '" + dg.nameTf.getText() + "', '" +
-                                dg.secNmTf.getText() + "', '" + dg.snameTf.getText() + "', '" + dg.salaryTf.getText() + "')";
-
-                        statement = connection.prepareStatement(sql);
-                        statement.executeUpdate();
-
-                        readMech();
-
                         dg.dispose();
+
 
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
 
                 });
-            });
+            } else {
+                FailDialog dg = new FailDialog("Ошибка!", "Не выбран заказ, который требуется изменить");
+            }
+        });
 
-            //Действие кнопки изменения механика
-            chMechBt.addActionListener( (ActionEvent e) -> {
+        //Действие кнопки удаления заказа
+        delOrBt.addActionListener( (ActionEvent e) -> {
+            if (tbl3.getSelectedRow() != -1) {
+                try {
 
-                //Создание диалогового окна изменения механика
+                    Object rowId = tbl3.getValueAt(tbl3.getSelectedRow(), 0);
 
-                if (tbl1.getSelectedRow() != -1) {
+                    sql = "DELETE from orders where id = " + (int) rowId;
 
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
 
-                    MechDialog dg = new MechDialog("Изменение данных механика");
+                    readOrders();
 
-                    Component[] ncomp = dg.getContentPane().getComponents();
-
-                    for (int i = 0; i < ncomp.length; i++) {
-                        if (ncomp[i] instanceof JTextField) {
-                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl1.getValueAt(tbl1.getSelectedRow(), i + 1)));
-                        }
-                    }
-
-                    dg.okBt.addActionListener((ActionEvent ev) -> {
-
-                        try {
-                            Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
-
-                            sql = "UPDATE staff SET name = '" + dg.nameTf.getText() + "', second_name = '" +
-                                    dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', salary = '" + dg.salaryTf.getText() +
-                                    "' where id = " + (int) rowId;
-
-                            statement = connection.prepareStatement(sql);
-                            statement.executeUpdate();
-
-                            readMech();
-
-                            dg.dispose();
-
-
-                        } catch (SQLException e1) {
-                            e1.printStackTrace();
-                        }
-
-                    });
-                } else {
-                    new FailDialog("Ошибка!", "Не выбран механик, данные которого требуется изменить");
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
                 }
+            } else {
+                new FailDialog("Ошибка!", "Не выбран заказ, который требуется удалить");
+            }
+        });
+
+        //Действие кнопки добавления механика
+        addMechBt.addActionListener( (ActionEvent e) -> {
+
+            //Создание диалогового окна добавления механика
+
+            MechDialog dg = new MechDialog("Добавление механика");
+
+            dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                try {
+
+                    sql = "INSERT into staff values (null, '" + dg.nameTf.getText() + "', '" +
+                            dg.secNmTf.getText() + "', '" + dg.snameTf.getText() + "', '" + dg.salaryTf.getText() + "')";
+
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
+
+                    readMech();
+
+                    dg.dispose();
+
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+
             });
+        });
 
-            //Действие кнопки удаления механика
-            delMechBt.addActionListener( (ActionEvent e) -> {
-                if (tbl1.getSelectedRow() != -1) {
+        //Действие кнопки изменения механика
+        chMechBt.addActionListener( (ActionEvent e) -> {
+
+            //Создание диалогового окна изменения механика
+
+            if (tbl1.getSelectedRow() != -1) {
+
+
+                MechDialog dg = new MechDialog("Изменение данных механика");
+
+                Component[] ncomp = dg.getContentPane().getComponents();
+
+                for (int i = 0; i < ncomp.length; i++) {
+                    if (ncomp[i] instanceof JTextField) {
+                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl1.getValueAt(tbl1.getSelectedRow(), i + 1)));
+                    }
+                }
+
+                dg.okBt.addActionListener((ActionEvent ev) -> {
+
                     try {
-
                         Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
 
-                        sql = "DELETE from staff where id = " + (int) rowId;
+                        sql = "UPDATE staff SET name = '" + dg.nameTf.getText() + "', second_name = '" +
+                                dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', salary = '" + dg.salaryTf.getText() +
+                                "' where id = " + (int) rowId;
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
 
                         readMech();
 
+                        dg.dispose();
+
+
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
-                } else {
-                    new FailDialog("Ошибка!", "Не выбран механик, которого требуется удалить");
+
+                });
+            } else {
+                new FailDialog("Ошибка!", "Не выбран механик, данные которого требуется изменить");
+            }
+        });
+
+        //Действие кнопки удаления механика
+        delMechBt.addActionListener( (ActionEvent e) -> {
+            if (tbl1.getSelectedRow() != -1) {
+                try {
+
+                    Object rowId = tbl1.getValueAt(tbl1.getSelectedRow(), 0);
+
+                    sql = "DELETE from staff where id = " + (int) rowId;
+
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
+
+                    readMech();
+
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
                 }
+            } else {
+                new FailDialog("Ошибка!", "Не выбран механик, которого требуется удалить");
+            }
+        });
+
+        addClBt.addActionListener( (ActionEvent e) -> {
+
+            //Создание диалогового окна добавления клиента
+
+            ClientDialog dg = new ClientDialog("Добавление клиента");
+
+            dg.okBt.addActionListener((ActionEvent ev) -> {
+
+                try {
+                    StringBuilder sb = new StringBuilder();
+                    Scanner scanner = new Scanner(dg.telTf.getText());
+                    scanner.useDelimiter("-");
+                    while (scanner.hasNext()) {
+                        sb.append(scanner.next());
+                    }
+
+                    sql = "INSERT into clients values (null, '" + dg.nameTf.getText() + "', '" +
+                            dg.secNmTf.getText() + "', '" + dg.snameTf.getText() + "', '" + sb.toString() + "')";
+
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
+
+                    readClients();
+
+                    dg.dispose();
+
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+
             });
+        });
 
-            addClBt.addActionListener( (ActionEvent e) -> {
+        //Действие кнопки изменения клиента
+        chClBt.addActionListener( (ActionEvent e) -> {
 
-                //Создание диалогового окна добавления клиента
+            //Создание диалогового окна изменения клиента
 
-                ClientDialog dg = new ClientDialog("Добавление клиента");
+            if (tbl2.getSelectedRow() != -1) {
+                ClientDialog dg = new ClientDialog("Изменение данных клиента");
+
+                Component[] ncomp = dg.getContentPane().getComponents();
+
+                for (int i = 0; i < ncomp.length; i++) {
+                    if (ncomp[i] instanceof JFormattedTextField) {
+                        ((JFormattedTextField) ncomp[i]).setText(String.valueOf(tbl2.getValueAt(tbl2.getSelectedRow(), i + 1)));
+                    } else if (ncomp[i] instanceof JTextField) {
+                        ((JTextField) ncomp[i]).setText(String.valueOf(tbl2.getValueAt(tbl2.getSelectedRow(), i + 1)));
+                    }
+                }
 
                 dg.okBt.addActionListener((ActionEvent ev) -> {
 
-                    try {
+                    StringBuilder sb = new StringBuilder();
+                    Scanner scanner = new Scanner(dg.telTf.getText());
+                    scanner.useDelimiter("-");
+                    while (scanner.hasNext()) {
+                        sb.append(scanner.next());
+                    }
 
-                        sql = "INSERT into clients values (null, '" + dg.nameTf.getText() + "', '" +
-                                dg.secNmTf.getText() + "', '" + dg.snameTf.getText() + "', '" + dg.telTf.getText() + "')";
+                    try {
+                        Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
+
+                        sql = "UPDATE clients SET name = '" + dg.nameTf.getText() + "', second_name = '" +
+                                dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', tel_number = '" + sb.toString() +
+                                "' where id = " + (int) rowId;
 
                         statement = connection.prepareStatement(sql);
                         statement.executeUpdate();
@@ -456,109 +534,63 @@ public class Visual {
 
                         dg.dispose();
 
+
                     } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
 
                 });
-            });
+            } else {
+                new FailDialog("Ошибка!", "Не выбран клиент, данные которого требуется изменить");
+            }
+        });
 
-            //Действие кнопки изменения клиента
-            chClBt.addActionListener( (ActionEvent e) -> {
+        //Действие кнопки удаления клиента
+        delClBt.addActionListener( (ActionEvent e) -> {
+            if (tbl2.getSelectedRow() != -1) {
+                try {
 
-                //Создание диалогового окна изменения клиента
+                    Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
 
-                if (tbl2.getSelectedRow() != -1) {
-                    ClientDialog dg = new ClientDialog("Изменение данных клиента");
+                    sql = "DELETE from clients where id = " + (int) rowId;
 
-                    Component[] ncomp = dg.getContentPane().getComponents();
+                    statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
 
-                    for (int i = 0; i < ncomp.length; i++) {
-                        if (ncomp[i] instanceof JTextField) {
-                            ((JTextField) ncomp[i]).setText(String.valueOf(tbl2.getValueAt(tbl2.getSelectedRow(), i + 1)));
-                        }
-                    }
+                    readClients();
 
-                    dg.okBt.addActionListener((ActionEvent ev) -> {
-
-                        try {
-                            Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
-
-                            sql = "UPDATE clients SET name = '" + dg.nameTf.getText() + "', second_name = '" +
-                                    dg.secNmTf.getText() + "', surname = '" + dg.snameTf.getText() + "', tel_number = '" + dg.telTf.getText() +
-                                    "' where id = " + (int) rowId;
-
-                            statement = connection.prepareStatement(sql);
-                            statement.executeUpdate();
-
-                            readClients();
-
-                            dg.dispose();
-
-
-                        } catch (SQLException e1) {
-                            e1.printStackTrace();
-                        }
-
-                    });
-                } else {
-                    new FailDialog("Ошибка!", "Не выбран клиент, данные которого требуется изменить");
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
                 }
-            });
+            } else {
+                new FailDialog("Ошибка!", "Не выбран клиент, которого требуется удалить");
+            }
+        });
 
-            //Действие кнопки удаления клиента
-            delClBt.addActionListener( (ActionEvent e) -> {
-                if (tbl2.getSelectedRow() != -1) {
-                    try {
+        orFltrBt.addActionListener( (ActionEvent e) -> {
 
-                        Object rowId = tbl2.getValueAt(tbl2.getSelectedRow(), 0);
+            Status st = new Status(statFltr.getSelectedItem().toString());
+            Filter filter = new Filter(descFltr.getText(), clFltr.getText(), st);
 
-                        sql = "DELETE from clients where id = " + (int) rowId;
+            readOrders(filter);
 
-                        statement = connection.prepareStatement(sql);
-                        statement.executeUpdate();
 
-                        readClients();
+        });
 
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
-                } else {
-                    new FailDialog("Ошибка!", "Не выбран клиент, которого требуется удалить");
+        mechStatBt.addActionListener( (ActionEvent e) -> {
+            if (tbl1.getSelectedRow() != -1) {
+                Object[] mech = new Object[colounmHeader1.length];
+                for (int i = 0; i < mech.length; i++) {
+                    mech[i] = tbl1.getValueAt(tbl1.getSelectedRow(), i);
                 }
-            });
 
-            orFltrBt.addActionListener( (ActionEvent e) -> {
-
-                Status st = new Status(statFltr.getSelectedItem().toString());
-                Filter filter = new Filter(descFltr.getText(), clFltr.getText(), st);
-
-                readOrders(filter);
-
-
-            });
-
-            mechStatBt.addActionListener( (ActionEvent e) -> {
-                if (tbl1.getSelectedRow() != -1) {
-                    Object[] mech = new Object[colounmHeader1.length];
-                    for (int i = 0; i < mech.length; i++) {
-                        mech[i] = tbl1.getValueAt(tbl1.getSelectedRow(), i);
-                    }
-
-                    int stats = 0;
-                    for (int i = 0; i < countOrders; i++) {
-                        if (tbl3.getValueAt(i, 3) != null && tbl3.getValueAt(i, 3).equals((String) mech[1])) stats++;
-                    }
-                    new StatsDialog("Статистика механика", (String) mech[1], (String) mech[2], (String) mech[3], (int) mech[4], stats);
-                } else new FailDialog("Ошибка!", "Не выбран механик");
-            });
-
-
-        /*} catch (ClassNotFoundException e1) {
-            e1.printStackTrace();
-        } catch (SQLException e2) {
-            e2.printStackTrace();
-        }*/
+                int stats = 0;
+                for (int i = 0; i < countOrders; i++) {
+                    if (tbl3.getValueAt(i, 3) != null && tbl3.getValueAt(i, 3).equals((String) mech[1])) stats++;
+                }
+                new StatsDialog("Статистика механика", (String) mech[1], (String) mech[2], (String) mech[3], (int) mech[4], stats);
+            } else new FailDialog("Ошибка!", "Не выбран механик");
+        });
 
 
     }
@@ -573,11 +605,16 @@ public class Visual {
             resultSet.next();
             countMechs = resultSet.getInt("count");
 
+            int selRow = tbl1.getSelectedRow();
+
             mechBox.setVisible(false);
             mechBox.remove(jsp1);
             tbl1 = new JTable(new Object[countMechs][colounmHeader1.length], colounmHeader1);
             jsp1 = new JScrollPane(tbl1);
             mechBox.add(jsp1);
+
+            tbl1.changeSelection(selRow,0, false, false);
+
             mechBox.setVisible(true);
 
             sql = "SELECT * FROM staff";
@@ -627,11 +664,16 @@ public class Visual {
             resultSet.next();
             countClients = resultSet.getInt("count");
 
+            int selRow = tbl2.getSelectedRow();
+
             clBox.setVisible(false);
             clBox.remove(jsp2);
             tbl2 = new JTable(new Object[countClients][coloumnHeader2.length], coloumnHeader2);
             jsp2 = new JScrollPane(tbl2);
             clBox.add(jsp2);
+
+            tbl2.changeSelection(selRow,0, false, false);
+
             clBox.setVisible(true);
 
             sql = "SELECT * FROM clients";
@@ -650,7 +692,8 @@ public class Visual {
                 String surname = resultSet.getString("surname");
                 tbl2.setValueAt(surname, count, 1);
                 long tel = resultSet.getLong("tel_number");
-                tbl2.setValueAt(tel, count, 4);
+                char[] ch = String.valueOf(tel).toCharArray();
+                tbl2.setValueAt(new StringBuilder().append(ch, 0, 1).append("-").append(ch,1,3).append("-").append(ch,4,7).toString(), count, 4);
 
                 count++;
 
@@ -717,10 +760,10 @@ public class Visual {
                 tbl3.setValueAt(client, count, 2);
                 String mech = resultSet.getString("mech");
                 tbl3.setValueAt(mech, count, 3);
-                String init_time = resultSet.getString("init_date");
-                tbl3.setValueAt(init_time, count, 4);
-                String fin_time = resultSet.getString("fin_date");
-                tbl3.setValueAt(fin_time, count, 5);
+                LocalDate initDate = LocalDate.parse(resultSet.getString("init_date"), sqlFormatter);
+                tbl3.setValueAt(initDate.format(normFormatter), count, 4);
+                LocalDate finDate = LocalDate.parse(resultSet.getString("fin_date"), sqlFormatter);
+                tbl3.setValueAt(finDate.format(normFormatter), count, 5);
                 int cost = resultSet.getInt("cost");
                 tbl3.setValueAt(cost, count, 6);
                 String status = resultSet.getString("status");
@@ -758,12 +801,17 @@ public class Visual {
             resultSet.next();
             countOrders = resultSet.getInt("count");
 
+            int selRow = tbl3.getSelectedRow();
+
             //Генерация новой таблицы
             orBox.setVisible(false);
             orBox.remove(jsp3);
             tbl3 = new JTable(new Object[countOrders][coloumnHeader3.length], coloumnHeader3);
             jsp3 = new JScrollPane(tbl3);
             orBox.add(jsp3);
+
+            tbl3.changeSelection(selRow,0, false, false);
+
             orBox.setVisible(true);
 
             sql = "SELECT * FROM orders";
@@ -777,8 +825,8 @@ public class Visual {
                 String description = resultSet.getString("description");
                 String client = resultSet.getString("client");
                 String mech = resultSet.getString("mech");
-                String init_time = resultSet.getString("init_date");
-                String fin_time = resultSet.getString("fin_date");
+                LocalDate initDate = LocalDate.parse(resultSet.getString("init_date"), sqlFormatter);
+                LocalDate finDate = LocalDate.parse(resultSet.getString("fin_date"), sqlFormatter);
                 int cost = resultSet.getInt("cost");
                 String status = resultSet.getString("status");
 
@@ -789,8 +837,8 @@ public class Visual {
                 tbl3.setValueAt(description, count, 1);
                 tbl3.setValueAt(client, count, 2);
                 tbl3.setValueAt(mech, count, 3);
-                tbl3.setValueAt(init_time, count, 4);
-                tbl3.setValueAt(fin_time, count, 5);
+                tbl3.setValueAt(initDate.format(normFormatter), count, 4);
+                tbl3.setValueAt(finDate.format(normFormatter), count, 5);
                 tbl3.setValueAt(cost, count, 6);
                 tbl3.setValueAt(status, count, 7);
 
@@ -823,32 +871,36 @@ public class Visual {
             setBounds(fr.getX() + 200, fr.getY() + 200, fr.getWidth() - 500, fr.getHeight() - 350);
             setLayout(null);
             descTf = new JTextField();
-            //clTf = new JTextField();
-            //mechTf = new JTextField();
             clCBox = new JComboBox();
             mechCBox = new JComboBox();
-            inDateTf = new JTextField();
-            finDateTf = new JTextField();
+
+            try {
+                dateTxFldFormatter = new MaskFormatter("##.##.#### г.");
+            } catch (ParseException pe) {
+                pe.printStackTrace();
+            }
+
+            inDateTf = new JFormattedTextField(dateTxFldFormatter);
+            finDateTf = new JFormattedTextField(dateTxFldFormatter);
+
             costTf = new JTextField();
             stVars = new String[] {"Запланирован", "Выполнен", "Принят клиентом"};
             stCBox = new JComboBox(stVars);
             descTfLb = new JLabel("Описание заказа: ");
             clTfLb = new JLabel("Фамилия клиента: ");
             mechTfLb = new JLabel("Фамилия механика: ");
-            inDateTfLb = new JLabel("Дата начала работ: ");
-            finDateTfLb = new JLabel("Дата окончания работ: ");
+            inDateTfLb = new JLabel("Дата начала работ (чч.мм.гггг): ");
+            finDateTfLb = new JLabel("Дата окончания работ (чч.мм.гггг): ");
             costTfLb = new JLabel("Стоимость, руб: ");
             stTfLb = new JLabel("Статус заказа: ");
             okBt = new JButton("OK");
-            add(descTf);
-            //add(clTf);
-            //add(mechTf);
-            add(clCBox);
-            add(mechCBox);
-            add(inDateTf);
-            add(finDateTf);
-            add(costTf);
-            add(stCBox);
+            add(descTf, 0);
+            add(clCBox, 1);
+            add(mechCBox, 2);
+            add(inDateTf, 3);
+            add(finDateTf, 4);
+            add(costTf, 5);
+            add(stCBox, 6);
             add(descTfLb);
             add(clTfLb);
             add(mechTfLb);
@@ -860,24 +912,21 @@ public class Visual {
 
             //Размещение компонентов
 
-            descTf.setBounds(50, 50, 150, 25);
-            //clTf.setBounds(descTf.getX(), descTf.getY() + descTf.getHeight() + d, descTf.getWidth(), descTf.getHeight());
-            //mechTf.setBounds(descTf.getX(), descTf.getY() + 2 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
+            descTf.setBounds(20, 50, 180, 25);
             clCBox.setBounds(descTf.getX(), descTf.getY() + descTf.getHeight() + d, descTf.getWidth(), descTf.getHeight());
             mechCBox.setBounds(descTf.getX(), descTf.getY() + 2 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
             costTf.setBounds(descTf.getX(), descTf.getY() + 3 * (descTf.getHeight() + d), descTf.getWidth(), descTf.getHeight());
             inDateTf.setBounds(descTf.getX() + descTf.getWidth() + l, descTf.getY(), descTf.getWidth(), descTf.getHeight());
             finDateTf.setBounds(inDateTf.getX(), clCBox.getY(), descTf.getWidth(), descTf.getHeight());
-
             stCBox.setBounds(inDateTf.getX(), mechCBox.getY(), descTf.getWidth(), descTf.getHeight());
-            descTfLb.setBounds(descTf.getX(), descTf.getY() - 15, descTf.getWidth(), 15);
-            clTfLb.setBounds(clCBox.getX(), clCBox.getY() - 15, clCBox.getWidth(), 15);
-            mechTfLb.setBounds(mechCBox.getX(), mechCBox.getY() - 15, mechCBox.getWidth(), 15);
-            inDateTfLb.setBounds(inDateTf.getX(), inDateTf.getY() - 15, inDateTf.getWidth(), 15);
-            finDateTfLb.setBounds(finDateTf.getX(), finDateTf.getY() - 15, finDateTf.getWidth(), 15);
-            costTfLb.setBounds(costTf.getX(), costTf.getY() - 15, costTf.getWidth(), 15);
 
-            stTfLb.setBounds(stCBox.getX(), stCBox.getY() - 15, stCBox.getWidth(), 15);
+            descTfLb.setBounds(descTf.getX(), descTf.getY() - 15, descTf.getWidth() + 30, 15);
+            clTfLb.setBounds(clCBox.getX(), clCBox.getY() - 15, descTfLb.getWidth(), 15);
+            mechTfLb.setBounds(mechCBox.getX(), mechCBox.getY() - 15, descTfLb.getWidth(), 15);
+            inDateTfLb.setBounds(inDateTf.getX(), inDateTf.getY() - 15, descTfLb.getWidth(), 15);
+            finDateTfLb.setBounds(finDateTf.getX(), finDateTf.getY() - 15, descTfLb.getWidth(), 15);
+            costTfLb.setBounds(costTf.getX(), costTf.getY() - 15, descTfLb.getWidth(), 15);
+            stTfLb.setBounds(stCBox.getX(), stCBox.getY() - 15, descTfLb.getWidth(), 15);
 
             for (int i = 0; i < tbl1.getRowCount(); i++) {
                 mechCBox.addItem(tbl1.getValueAt(i, 1));
@@ -898,7 +947,8 @@ public class Visual {
 
             setVisible(true);
         }
-        JTextField descTf, inDateTf, finDateTf, costTf;
+        JFormattedTextField inDateTf, finDateTf;
+        JTextField descTf, costTf;
         JComboBox clCBox, mechCBox, stCBox;
         String[] clVars, mechVars, stVars;
         JLabel descTfLb, clTfLb, mechTfLb, inDateTfLb, finDateTfLb, costTfLb, stTfLb;
@@ -921,10 +971,10 @@ public class Visual {
             salTfLb = new JLabel("Зарплата в час: ");
 
             okBt = new JButton("OK");
-            add(snameTf);
-            add(nameTf);
-            add(secNmTf);
-            add(salaryTf);
+            add(snameTf, 0);
+            add(nameTf, 1);
+            add(secNmTf, 2);
+            add(salaryTf, 3);
 
             add(snameTfLb);
             add(nameTfLb);
@@ -973,7 +1023,15 @@ public class Visual {
             snameTf = new JTextField();
             nameTf = new JTextField();
             secNmTf = new JTextField();
-            telTf = new JTextField();
+
+            try {
+                telTxFlFormatter = new MaskFormatter("8-###-#######");
+                sqlTelFormatter = new MaskFormatter("##########");/////////////////////////////////////////
+            } catch (ParseException pe) {
+                pe.printStackTrace();
+            }
+
+            telTf = new JFormattedTextField(telTxFlFormatter);
 
             snameTfLb = new JLabel("Фамилия: ");
             nameTfLb = new JLabel("Имя: ");
@@ -981,10 +1039,10 @@ public class Visual {
             telTfLb = new JLabel("Телефон: ");
 
             okBt = new JButton("OK");
-            add(snameTf);
-            add(nameTf);
-            add(secNmTf);
-            add(telTf);
+            add(snameTf, 0);
+            add(nameTf, 1);
+            add(secNmTf, 2);
+            add(telTf, 3);
 
             add(snameTfLb);
             add(nameTfLb);
@@ -1015,7 +1073,7 @@ public class Visual {
         JTextField snameTf;
         JTextField nameTf;
         JTextField secNmTf;
-        JTextField telTf;
+        JFormattedTextField telTf;
         JLabel snameTfLb;
         JLabel nameTfLb;
         JLabel secNmTfLb;
@@ -1043,7 +1101,7 @@ public class Visual {
 
             //Размещение компонентов
 
-            messageLb.setBounds(getWidth() / 2 - ((int) (message.length() * 6.5)) / 2, 10, (int) (message.length() * 6.5), 50);
+            messageLb.setBounds(getWidth() / 2 - ((int) (message.length() * 7)) / 2, 10, (int) (message.length() * 7), 50);
 
             //Размещение кнопки "OK"
             okBt.setBounds(getWidth() / 2 - 40, messageLb.getY() + messageLb.getHeight() + 20, 80, 40);
@@ -1087,7 +1145,6 @@ public class Visual {
             salLb = new JLabel(String.valueOf(sal) + " р./час");
             statsLb = new JLabel(String.valueOf(stats));
 
-            Font font = new Font("Verdana", Font.BOLD, 15);
             sNameLb.setFont(font);
             nameLb.setFont(font);;
             secNmLb.setFont(font);
