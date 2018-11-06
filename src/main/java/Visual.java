@@ -702,8 +702,6 @@ public class Visual {
             resultSet.close();
             statement.close();
 
-
-
             for (int i = count; i < tbl2.getRowCount(); i++) {
                 for (int j = 0; j < tbl2.getColumnCount(); j++)
                     tbl2.setValueAt(null, i, j);
@@ -1026,7 +1024,6 @@ public class Visual {
 
             try {
                 telTxFlFormatter = new MaskFormatter("8-###-#######");
-                sqlTelFormatter = new MaskFormatter("##########");/////////////////////////////////////////
             } catch (ParseException pe) {
                 pe.printStackTrace();
             }
@@ -1288,8 +1285,6 @@ class Status {
         return status.toString().equals(toString());
 
     }
-
-
 
 }
 
